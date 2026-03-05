@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚖️ 重量板 - 蒙氏教育</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: linear-gradient(135deg, #eceff1, #cfd8dc); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            padding: 20px;
+        }
+        h1 { color: #455a64; margin-bottom: 10px; }
+        #game-area {
+            display: flex;
+            gap: 40px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .weight-box {
+            width: 100px;
+            height: 120px;
+            background: #fff;
+            border: 3px solid #607d8b;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .weight-box:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .weight-box.selected { border-color: #4caf50; background: #e8f5e9; }
+        .weight-box .weight { font-size: 40px; }
+        .weight-box .label { font-size: 14px; color: #666; margin-top: 5px; }
+        
+        #scale {
+            width: min(90vw, 350px);
+            height: 150px;
+            background: #78909c;
+            border-radius: 10px;
+            position: relative;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .scale-plate {
+            width: 120px;
+            height: 20px;
+            background: #b0bec5;
+            border-radius: 10px;
+            position: absolute;
+            bottom: 20px;
+        }
+        .scale-plate.left { left: 30px; }
+        .scale-plate.right { right: 30px; }
+        .scale-arm {
+            width: 200px;
+            height: 8px;
+            background: #455a64;
+            border-radius: 4px;
+            position: absolute;
+            top: 50px;
+        }
+        .scale-center {
+            width: 20px;
+            height: 40px;
+            background: #37474f;
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .scale-item {
+            position: absolute;
+            bottom: 40px;
+            font-size: 35px;
+            transition: all 0.3s;
+        }
+        
+        #result { margin-top: 15px; font-size: 1.3rem; color: #455a64; text-align: center; }
+        #message { margin-top: 10px; color: #78909c; }
+    </style>
+</head>
+<body>
+    <h1>⚖️ 重量板游戏</h1>
+    <p>感觉重量，把相同的重量放到天平两边</p>
+    
+    <div id="game-area">
+        <div class="weight-box" onclick="select(this, 'light')">
+            <div class="weight">🪶</div>
+            <div class="label">轻</div>
+        </div>
+        <div class="weight-box" onclick="select(this, 'medium')">
+            <div class="weight">🧱</div>
+            <div class="label">中</div>
+        </div>
+        <div class="weight-box" onclick="select(this, 'heavy')">
+            <div class="weight">🏋️</div>
+            <div class="label">重</div>
+        </div>
+    </div>
+    
+    <div id="scale">
+        <div class="scale-plate left" id="left-plate"></div>
+        <div class="scale-arm"></div>
+        <div class="scale-center"></div>
+        <div class="scale-plate right" id="right-plate"></div>
+    </div>
+    
+    <div id="result">已选择: 0/2</div>
+    <div id="message">点击上方物品感受重量，然后放到天平两边</div>
+    
+    <script>
+        const weights = [
+            { type: 'light', emoji: '🪶', name: '羽毛', value: 1 },
+            { type: 'light', emoji: '🪶', name: '羽毛', value: 1 },
+            { type: 'medium', emoji: '🧱', name: '砖块', value: 2 },
+            { type: 'medium', emoji: '🧱', name: '砖块', value: 2 },
+            { type: 'heavy', emoji: '🏋️', name: '哑铃', value: 3 },
+            { type: 'heavy', emoji: '🏋️', name: '哑铃', value: 3 }
+        ];
+        
+        // 打乱
+        weights.sort(() => Math.random() - 0.5);
+        
+        const gameArea = document.getElementById('game-area');
+        const leftPlate = document.getElementById('left-plate');
+        const rightPlate = document.getElementById('right-plate');
+        
+        let selectedItems = [];
+        let currentIndex = 0;
+        
+        // 重新渲染选择区
+        function render() {
+            gameArea.innerHTML = '';
+            weights.slice(currentIndex, currentIndex + 3).forEach(w => {
+                const box = document.createElement('div');
+                box.className = 'weight-box';
+                box.innerHTML = `<div class="weight">${w.emoji}</div><div class="label">${w.name}</div>`;
+                box.onclick = () => pickWeight(w);
+                gameArea.appendChild(box);
+            });
+        }
+        
+        function pickWeight(weight) {
+            if (selectedItems.length >= 2) return;
+            
+            selectedItems.push(weight);
+            currentIndex++;
+            
+            // 显示选中的物品
+            const item = document.createElement('div');
+            item.className = 'scale-item';
+            item.textContent = weight.emoji;
+            
+            if (selectedItems.length === 1) {
+                item.style.left = '50px';
+                leftPlate.appendChild(item);
+            } else {
+                item.style.right = '50px';
+                rightPlate.appendChild(item);
+                
+                // 检查是否平衡
+                checkBalance();
+            }
+            
+            document.getElementById('result').textContent = '已选择: ' + selectedItems.length + '/2';
+            
+            if (currentIndex < weights.length) {
+                render();
+            } else {
+                gameArea.innerHTML = '<p style="color:#78909c">所有物品都选完了</p>';
+            }
+        }
+        
+        function checkBalance() {
+            const v1 = selectedItems[0].value;
+            const v2 = selectedItems[1].value;
+            
+            setTimeout(() => {
+                if (v1 === v2) {
+                    document.getElementById('message').textContent = '⚖️ 天平平衡了！重量相同！';
+                    document.getElementById('result').textContent = '🎉 配对成功！';
+                } else {
+                    const heavier = v1 > v2 ? '右边' : '左边';
+                    document.getElementById('message').textContent = '⚖️ ' + heavier + '更重！';
+                }
+            }, 500);
+        }
+        
+        // 重置按钮
+        function reset() {
+            selectedItems = [];
+            currentIndex = 0;
+            leftPlate.innerHTML = '';
+            rightPlate.innerHTML = '';
+            document.getElementById('result').textContent = '已选择: 0/2';
+            document.getElementById('message').textContent = '点击上方物品感受重量，然后放到天平两边';
+            render();
+        }
+        
+        render();
+    </script>
+</body>
+</html>
