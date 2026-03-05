@@ -96,7 +96,19 @@
             padding: 3px 10px;
             border-radius: 15px;
             font-size: 0.8rem;
+            margin-right: 5px;
         }
+        
+        .difficulty-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            margin-right: 5px;
+        }
+        .difficulty-tag.newbie { background: #10b981; }
+        .difficulty-tag.master { background: #f59e0b; }
+        .difficulty-tag.hell { background: #ef4444; }
         
         footer {
             text-align: center;
@@ -109,7 +121,7 @@
 <body>
     <header>
         <h1>🦞 游戏门户</h1>
-        <p class="subtitle">精选好游戏，轻松玩</p>
+        <p class="subtitle">精选好游戏，轻松玩 | 每个游戏3种难度</p>
     </header>
     
     <div id="gamesContainer">
@@ -119,6 +131,9 @@
                 <div class="game-title">贪吃蛇</div>
                 <div class="game-description">经典贪吃蛇游戏</div>
                 <span class="game-age">👶 3-99岁</span>
+                <span class="difficulty-tag newbie">🌱新手</span>
+                <span class="difficulty-tag master">🎯大师</span>
+                <span class="difficulty-tag hell">💀地狱</span>
             </div>
         </a>
         
@@ -128,6 +143,9 @@
                 <div class="game-title">俄罗斯方块</div>
                 <div class="game-description">经典益智游戏</div>
                 <span class="game-age">👶 6-99岁</span>
+                <span class="difficulty-tag newbie">🌱新手</span>
+                <span class="difficulty-tag master">🎯大师</span>
+                <span class="difficulty-tag hell">💀地狱</span>
             </div>
         </a>
         
@@ -137,6 +155,9 @@
                 <div class="game-title">数字拼图</div>
                 <div class="game-description">滑动拼图游戏</div>
                 <span class="game-age">👶 4-99岁</span>
+                <span class="difficulty-tag newbie">🌱新手</span>
+                <span class="difficulty-tag master">🎯大师</span>
+                <span class="difficulty-tag hell">💀地狱</span>
             </div>
         </a>
         
@@ -146,6 +167,9 @@
                 <div class="game-title">记忆卡片</div>
                 <div class="game-description">翻牌记忆游戏</div>
                 <span class="game-age">👶 3-99岁</span>
+                <span class="difficulty-tag newbie">🌱新手</span>
+                <span class="difficulty-tag master">🎯大师</span>
+                <span class="difficulty-tag hell">💀地狱</span>
             </div>
         </a>
         
@@ -155,12 +179,15 @@
                 <div class="game-title">弹球游戏</div>
                 <div class="game-description">经典打砖块</div>
                 <span class="game-age">👶 4-99岁</span>
+                <span class="difficulty-tag newbie">🌱新手</span>
+                <span class="difficulty-tag master">🎯大师</span>
+                <span class="difficulty-tag hell">💀地狱</span>
             </div>
         </a>
     </div>
     
     <footer>
-        <p>🎮 自动游戏开发流水线 v1.0</p>
+        <p>🎮 自动游戏开发流水线 v1.1 | 每个游戏3种难度</p>
     </footer>
 </body>
 </html>
