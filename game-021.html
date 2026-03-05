@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👅 味觉游戏 - 蒙氏教育</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: linear-gradient(135deg, #fffde7, #fff9c4); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            padding: 20px;
+        }
+        h1 { color: #f9a825; margin-bottom: 10px; }
+        #plate {
+            width: min(90vw, 350px);
+            height: min(90vw, 350px);
+            background: #fff;
+            border-radius: 50%;
+            border: 8px solid #f57f17;
+            position: relative;
+            margin: 20px 0;
+        }
+        .food {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border: 3px solid #ddd;
+            font-size: 30px;
+        }
+        .food:hover { transform: scale(1.15); }
+        .food .label { font-size: 10px; color: #666; margin-top: 2px; }
+        
+        .food-1 { top: 20px; left: 50%; transform: translateX(-50%); }
+        .food-2 { top: 80px; right: 30px; }
+        .food-3 { bottom: 80px; right: 30px; }
+        .food-4 { bottom: 20px; left: 50%; transform: translateX(-50%); }
+        .food-5 { bottom: 80px; left: 30px; }
+        .food-6 { top: 80px; left: 30px; }
+        
+        .taste-btn {
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 1.2rem;
+            border: 3px solid #f9a825;
+            border-radius: 30px;
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .taste-btn:hover { transform: scale(1.05); }
+        .taste-btn.selected { background: #f9a825; color: #fff; }
+        
+        #taste-options {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        #message { margin-top: 15px; font-size: 1.1rem; color: #f57f17; text-align: center; }
+        #score { margin-top: 10px; font-size: 1.3rem; color: #f9a825; }
+    </style>
+</head>
+<body>
+    <h1>👅 味觉游戏</h1>
+    <p>品尝食物，说出它的味道</p>
+    
+    <div id="plate">
+        <div class="food food-1" onclick="taste(this, 'sweet')">
+            <div>🍬</div>
+            <div class="label">?</div>
+        </div>
+        <div class="food food-2" onclick="taste(this, 'sour')">
+            <div>🍋</div>
+            <div class="label">?</div>
+        </div>
+        <div class="food food-3" onclick="taste(this, 'salty')">
+            <div>🥜</div>
+            <div class="label">?</div>
+        </div>
+        <div class="food food-4" onclick="taste(this, 'bitter')">
+            <div>☕</div>
+            <div class="label">?</div>
+        </div>
+        <div class="food food-5" onclick="taste(this, 'spicy')">
+            <div>🌶️</div>
+            <div class="label">?</div>
+        </div>
+        <div class="food food-6" onclick="taste(this, 'sweet')">
+            <div>🍓</div>
+            <div class="label">?</div>
+        </div>
+    </div>
+    
+    <div id="taste-options">
+        <button class="taste-btn" onclick="selectTaste('甜')">🍬 甜</button>
+        <button class="taste-btn" onclick="selectTaste('酸')">🍋 酸</button>
+        <button class="taste-btn" onclick="selectTaste('咸')">🧂 咸</button>
+        <button class="taste-btn" onclick="selectTaste('苦')">☕ 苦</button>
+        <button class="taste-btn" onclick="selectTaste('辣')">🌶️ 辣</button>
+    </div>
+    
+    <div id="message">点击食物品尝，然后选择味道</div>
+    <div id="score">答对: 0/6</div>
+    
+    <script>
+        const foodData = [
+            { taste: 'sweet', emoji: '🍬', name: '糖', correct: '甜' },
+            { taste: 'sour', emoji: '🍋', name: '柠檬', correct: '酸' },
+            { taste: 'salty', emoji: '🥜', name: '坚果', correct: '咸' },
+            { taste: 'bitter', emoji: '☕', name: '咖啡', correct: '苦' },
+            { taste: 'spicy', emoji: '🌶️', name: '辣椒', correct: '辣' },
+            { taste: 'sweet', emoji: '🍓', name: '草莓', correct: '甜' }
+        ];
+        
+        let selectedFood = null;
+        let selectedTaste = null;
+        let score = 0;
+        
+        // 初始化
+        document.querySelectorAll('.food').forEach((food, index) => {
+            food.dataset.taste = foodData[index].taste;
+            food.dataset.correct = foodData[index].correct;
+        });
+        
+        function taste(food, type) {
+            selectedFood = food;
+            document.querySelectorAll('.food').forEach(f => f.style.border = '3px solid #ddd');
+            food.style.border = '3px solid #f9a825';
+            document.getElementById('message').textContent = '你品尝了: ' + foodData[Array.from(document.querySelectorAll('.food')).indexOf(food)].name;
+        }
+        
+        function selectTaste(taste) {
+            document.querySelectorAll('.taste-btn').forEach(btn => btn.classList.remove('selected'));
+            event.target.classList.add('selected');
+            selectedTaste = taste;
+            
+            if (selectedFood) {
+                const correct = selectedFood.dataset.correct;
+                if (selectedTaste === correct) {
+                    score++;
+                    selectedFood.querySelector('.label').textContent = taste;
+                    selectedFood.style.border = '3px solid #4caf50';
+                    document.getElementById('message').textContent = '🎉 答对了！';
+                    document.getElementById('score').textContent = '答对: ' + score + '/6';
+                    
+                    if (score >= 6) {
+                        setTimeout(() => alert('🎉 太棒了！所有味道都答对了！'), 300);
+                    }
+                } else {
+                    document.getElementById('message').textContent = '😕 不对哦，这是' + correct + '味';
+                }
+                
+                selectedFood = null;
+                setTimeout(() => {
+                    document.querySelectorAll('.taste-btn').forEach(btn => btn.classList.remove('selected'));
+                }, 1000);
+            }
+        }
+    </script>
+</body>
+</html>
