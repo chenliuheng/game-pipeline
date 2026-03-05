@@ -68,6 +68,29 @@
             color: #ef4444;
         }
         
+        .difficulty-selector {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .diff-btn {
+            padding: 8px 15px;
+            font-size: 0.8rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .diff-btn.newbie { background: #10b981; color: #fff; }
+        .diff-btn.master { background: #f59e0b; color: #fff; }
+        .diff-btn.hell { background: #ef4444; color: #fff; }
+        .diff-btn.active { 
+            transform: scale(1.1);
+            box-shadow: 0 0 10px currentColor;
+        }
+        
         #controls {
             margin-top: 15px;
             display: flex;
@@ -119,6 +142,11 @@
         </div>
         <div id="message"></div>
     </div>
+    <div class="difficulty-selector">
+        <button class="diff-btn newbie active" onclick="setDifficulty('newbie')">🌱 新手</button>
+        <button class="diff-btn master" onclick="setDifficulty('master')">🎯 大师</button>
+        <button class="diff-btn hell" onclick="setDifficulty('hell')">💀 地狱</button>
+    </div>
     <div id="controls">
         <button onclick="startGame()">开始</button>
         <button onclick="resetGame()">重置</button>
@@ -145,26 +173,55 @@
         
         const BRICK_COLORS = ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6'];
         
+        // 难度配置
+        const DIFFICULTY = {
+            newbie: { 
+                ballSpeed: 3, 
+                paddleWidth: 100, 
+                brickRows: 3,
+                lives: 5,
+                winRate: 1.0,
+                name: '🌱 新手' 
+            },
+            master: { 
+                ballSpeed: 5, 
+                paddleWidth: 60, 
+                brickRows: 5,
+                lives: 3,
+                winRate: 0.2,
+                name: '🎯 大师' 
+            },
+            hell: { 
+                ballSpeed: 8, 
+                paddleWidth: 40, 
+                brickRows: 7,
+                lives: 1,
+                winRate: 0.01,
+                name: '💀 地狱' 
+            }
+        };
+        
+        let currentDifficulty = 'newbie';
+        let config = DIFFICULTY.newbie;
+        
         let paddle = { x: canvas.width / 2 - PADDLE_WIDTH / 2, width: PADDLE_WIDTH };
-        let ball = { x: canvas.width / 2, y: canvas.height - 30, dx: 4, dy: -4 };
+        let ball = { x: canvas.width / 2, y: canvas.height - 30, dx: 3, dy: -3 };
         let bricks = [];
         let score = 0;
         let lives = 3;
         let isRunning = false;
         let gameLoop = null;
         
-        // 触摸控制
-        let touchStartX = 0;
-        
         function initBricks() {
             bricks = [];
-            for (let r = 0; r < BRICK_ROWS; r++) {
+            const rows = config.brickRows;
+            for (let r = 0; r < rows; r++) {
                 for (let c = 0; c < BRICK_COLS; c++) {
                     bricks.push({
                         x: BRICK_OFFSET_LEFT + c * (BRICK_WIDTH + BRICK_PADDING),
                         y: BRICK_OFFSET_TOP + r * (BRICK_HEIGHT + BRICK_PADDING),
                         status: 1,
-                        color: BRICK_COLORS[r]
+                        color: BRICK_COLORS[r % BRICK_COLORS.length]
                     });
                 }
             }
@@ -198,7 +255,6 @@
                     ctx.roundRect(brick.x, brick.y, BRICK_WIDTH, BRICK_HEIGHT, 4);
                     ctx.fill();
                     
-                    // 高光
                     ctx.fillStyle = 'rgba(255,255,255,0.3)';
                     ctx.beginPath();
                     ctx.roundRect(brick.x + 2, brick.y + 2, BRICK_WIDTH - 4, 4, 2);
@@ -217,11 +273,9 @@
         }
         
         function update() {
-            // 移动球
             ball.x += ball.dx;
             ball.y += ball.dy;
             
-            // 墙壁碰撞
             if (ball.x + BALL_RADIUS > canvas.width || ball.x - BALL_RADIUS < 0) {
                 ball.dx = -ball.dx;
             }
@@ -229,18 +283,15 @@
                 ball.dy = -ball.dy;
             }
             
-            // 挡板碰撞
             if (ball.y + BALL_RADIUS > canvas.height - PADDLE_HEIGHT - 15 &&
                 ball.y - BALL_RADIUS < canvas.height - 10 &&
                 ball.x > paddle.x && ball.x < paddle.x + paddle.width) {
                 
                 ball.dy = -Math.abs(ball.dy);
-                // 根据击打位置改变角度
                 const hitPos = (ball.x - paddle.x) / paddle.width;
                 ball.dx = (hitPos - 0.5) * 8;
             }
             
-            // 砖块碰撞
             bricks.forEach(brick => {
                 if (brick.status === 1) {
                     if (ball.x > brick.x && ball.x < brick.x + BRICK_WIDTH &&
@@ -250,15 +301,13 @@
                         score += 10;
                         document.getElementById('score').textContent = score;
                         
-                        // 检查胜利
                         if (bricks.every(b => b.status === 0)) {
-                            gameWin();
+                            winGame();
                         }
                     }
                 }
             });
             
-            // 掉出底部
             if (ball.y - BALL_RADIUS > canvas.height) {
                 lives--;
                 document.getElementById('lives').textContent = lives;
@@ -274,9 +323,10 @@
         function resetBall() {
             ball.x = canvas.width / 2;
             ball.y = canvas.height - 30;
-            ball.dx = 4 * (Math.random() > 0.5 ? 1 : -1);
-            ball.dy = -4;
-            paddle.x = canvas.width / 2 - PADDLE_WIDTH / 2;
+            const speed = config.ballSpeed;
+            ball.dx = speed * (Math.random() > 0.5 ? 1 : -1);
+            ball.dy = -speed;
+            paddle.x = canvas.width / 2 - paddle.width / 2;
         }
         
         function gameLoopFn() {
@@ -290,13 +340,20 @@
             if (isRunning) return;
             isRunning = true;
             score = 0;
-            lives = 3;
+            lives = config.lives;
             document.getElementById('score').textContent = score;
             document.getElementById('lives').textContent = lives;
             document.getElementById('message').style.display = 'none';
             
+            paddle.width = config.paddleWidth;
+            paddle.x = canvas.width / 2 - paddle.width / 2;
+            
             initBricks();
             resetBall();
+            
+            const speed = config.ballSpeed;
+            ball.dx = speed;
+            ball.dy = -speed;
             
             if (gameLoop) cancelAnimationFrame(gameLoop);
             gameLoopFn();
@@ -306,7 +363,7 @@
             isRunning = false;
             if (gameLoop) cancelAnimationFrame(gameLoop);
             score = 0;
-            lives = 3;
+            lives = config.lives;
             document.getElementById('score').textContent = score;
             document.getElementById('lives').textContent = lives;
             document.getElementById('message').style.display = 'none';
@@ -323,22 +380,30 @@
             msg.style.display = 'block';
         }
         
-        function gameWin() {
+        function winGame() {
             isRunning = false;
             if (gameLoop) cancelAnimationFrame(gameLoop);
             const msg = document.getElementById('message');
-            msg.textContent = '🎉 胜利！';
+            msg.innerHTML = `🎉 胜利！<br><span style="font-size:1rem">通过率: ${config.winRate * 100}%</span>`;
             msg.style.display = 'block';
         }
         
-        // 鼠标控制
+        function setDifficulty(diff) {
+            currentDifficulty = diff;
+            config = DIFFICULTY[diff];
+            
+            document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.diff-btn.${diff}`).classList.add('active');
+            
+            resetGame();
+        }
+        
         canvas.addEventListener('mousemove', (e) => {
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             paddle.x = Math.max(0, Math.min(canvas.width - paddle.width, x - paddle.width / 2));
         });
         
-        // 触摸控制
         canvas.addEventListener('touchstart', (e) => {
             const rect = canvas.getBoundingClientRect();
             touchStartX = e.touches[0].clientX - rect.left;
@@ -351,7 +416,6 @@
             paddle.x = Math.max(0, Math.min(canvas.width - paddle.width, x - paddle.width / 2));
         });
         
-        // 初始化
         initBricks();
         draw();
     </script>
