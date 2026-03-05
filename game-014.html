@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧹 扫地练习 - 蒙氏教育</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: linear-gradient(135deg, #fff3e0, #ffe0b2); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            padding: 20px;
+        }
+        h1 { color: #e65100; margin-bottom: 10px; }
+        #floor {
+            width: min(90vw, 400px);
+            height: min(70vw, 350px);
+            background: #d7ccc8;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            border: 4px solid #a1887f;
+        }
+        .dust {
+            width: 25px;
+            height: 25px;
+            position: absolute;
+            font-size: 20px;
+            cursor: pointer;
+            transition: transform 0.1s;
+            user-select: none;
+        }
+        .dust:hover { transform: scale(1.2); }
+        #broom {
+            font-size: 60px;
+            position: fixed;
+            pointer-events: none;
+            z-index: 100;
+            transition: transform 0.1s;
+        }
+        #dustpan {
+            font-size: 50px;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 101;
+        }
+        #collected {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            font-size: 30px;
+            background: rgba(255,255,255,0.8);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+        #score { margin-top: 15px; font-size: 1.3rem; color: #e65100; }
+        #instructions { margin-top: 5px; color: #8d6e63; font-size: 0.9rem; text-align: center; }
+        .swept {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: rgba(139, 195, 74, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: sweepAnim 0.3s ease-out;
+        }
+        @keyframes sweepAnim {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <h1>🧹 扫地练习</h1>
+    <p id="instructions">用手指或鼠标扫灰尘，把它們扫到一起</p>
+    <div id="floor">
+        <div id="collected">🗑️ 0</div>
+    </div>
+    <div id="broom">🧹</div>
+    <div id="dustpan">🗑️</div>
+    <div id="score">还剩: 10 个灰尘</div>
+    
+    <script>
+        const floor = document.getElementById('floor');
+        const dustTypes = ['🌫️', '💨', '🍘', '🟤', '⚫'];
+        let dusts = [];
+        let collected = 0;
+        const totalDust = 10;
+        
+        // 创建灰尘
+        for (let i = 0; i < totalDust; i++) {
+            const dust = document.createElement('div');
+            dust.className = 'dust';
+            dust.textContent = dustTypes[Math.floor(Math.random() * dustTypes.length)];
+            dust.style.left = Math.random() * (350 - 30) + 10 + 'px';
+            dust.style.top = Math.random() * (300 - 30) + 10 + 'px';
+            dust.dataset.x = parseFloat(dust.style.left);
+            dust.dataset.y = parseFloat(dust.style.top);
+            floor.appendChild(dust);
+            dusts.push(dust);
+        }
+        
+        // 扫帚跟随鼠标/触摸
+        const broom = document.getElementById('broom');
+        let isSweeping = false;
+        
+        document.addEventListener('mousemove', moveBroom);
+        document.addEventListener('touchmove', moveBroom);
+        
+        function moveBroom(e) {
+            const x = e.touches ? e.touches[0].clientX : e.clientX;
+            const y = e.touches ? e.touches[0].clientY : e.clientY;
+            broom.style.left = (x - 30) + 'px';
+            broom.style.top = (y - 30) + 'px';
+        }
+        
+        // 碰撞检测和清扫
+        floor.addEventListener('mousemove', sweep);
+        floor.addEventListener('touchmove', sweep);
+        
+        function sweep(e) {
+            const rect = floor.getBoundingClientRect();
+            const x = e.touches ? e.touches[0].clientX : e.clientX;
+            const y = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            dusts.forEach((dust, index) => {
+                if (!dust.dataset.collected) {
+                    const dx = x - (rect.left + parseFloat(dust.dataset.x) + 12);
+                    const dy = y - (rect.top + parseFloat(dust.dataset.y) + 12);
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < 40) {
+                        // 创建清扫动画
+                        const swept = document.createElement('div');
+                        swept.className = 'swept';
+                        swept.style.left = dust.dataset.x + 'px';
+                        swept.style.top = dust.dataset.y + 'px';
+                        floor.appendChild(swept);
+                        setTimeout(() => swept.remove(), 300);
+                        
+                        // 移动灰尘到垃圾铲
+                        dust.dataset.collected = 'true';
+                        dust.style.transition = 'all 0.3s';
+                        dust.style.left = (window.innerWidth - 80) + 'px';
+                        dust.style.top = (window.innerHeight - 150) + 'px';
+                        dust.style.opacity = '0';
+                        
+                        setTimeout(() => {
+                            dust.remove();
+                        }, 300);
+                        
+                        collected++;
+                        document.getElementById('collected').textContent = '🗑️ ' + collected;
+                        document.getElementById('score').textContent = '还剩: ' + (totalDust - collected) + ' 个灰尘';
+                        
+                        if (collected >= totalDust) {
+                            setTimeout(() => alert('🎉 太棒了！地板扫干净了！'), 500);
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
