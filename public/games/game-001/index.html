@@ -58,6 +58,29 @@
             color: #00d2ff;
         }
         
+        .difficulty-selector {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .diff-btn {
+            padding: 8px 15px;
+            font-size: 0.8rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .diff-btn.newbie { background: #10b981; color: #fff; }
+        .diff-btn.master { background: #f59e0b; color: #fff; }
+        .diff-btn.hell { background: #ef4444; color: #fff; }
+        .diff-btn.active { 
+            transform: scale(1.1);
+            box-shadow: 0 0 10px currentColor;
+        }
+        
         #controls {
             margin-top: 15px;
             display: flex;
@@ -101,6 +124,7 @@
         #dpad button {
             padding: 0;
             font-size: 1.5rem;
+            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
             border-radius: 10px;
         }
         
@@ -116,6 +140,11 @@
     <div id="gameContainer">
         <canvas id="gameCanvas" width="350" height="350"></canvas>
         <div id="score">得分: <span id="scoreValue">0</span></div>
+    </div>
+    <div class="difficulty-selector">
+        <button class="diff-btn newbie active" onclick="setDifficulty('newbie')">🌱 新手</button>
+        <button class="diff-btn master" onclick="setDifficulty('master')">🎯 大师</button>
+        <button class="diff-btn hell" onclick="setDifficulty('hell')">💀 地狱</button>
     </div>
     <div id="controls">
         <button onclick="startGame()">开始游戏</button>
@@ -144,8 +173,18 @@
         const GRID_SIZE = 20;
         const GRID_COUNT = Math.floor(canvas.width / GRID_SIZE);
         
+        // 难度配置
+        const DIFFICULTY = {
+            newbie: { speed: 150, foodCount: 1, winRate: 1.0, name: '🌱 新手' },
+            master: { speed: 100, foodCount: 2, winRate: 0.2, name: '🎯 大师' },
+            hell: { speed: 60, foodCount: 3, winRate: 0.01, name: '💀 地狱' }
+        };
+        
+        let currentDifficulty = 'newbie';
+        let gameSpeed = DIFFICULTY.newbie.speed;
+        
         let snake = [];
-        let food = { x: 0, y: 0 };
+        let foods = [];
         let direction = { x: 0, y: 0 };
         let nextDirection = { x: 0, y: 0 };
         let score = 0;
@@ -162,24 +201,34 @@
             nextDirection = { x: 1, y: 0 };
             score = 0;
             document.getElementById('scoreValue').textContent = score;
-            spawnFood();
+            spawnFoods();
+        }
+        
+        function spawnFoods() {
+            foods = [];
+            const foodCount = DIFFICULTY[currentDifficulty].foodCount;
+            for (let i = 0; i < foodCount; i++) {
+                spawnFood();
+            }
         }
         
         function spawnFood() {
             let valid = false;
             while (!valid) {
-                food.x = Math.floor(Math.random() * GRID_COUNT);
-                food.y = Math.floor(Math.random() * GRID_COUNT);
-                valid = !snake.some(segment => segment.x === food.x && segment.y === food.y);
+                const food = {
+                    x: Math.floor(Math.random() * GRID_COUNT),
+                    y: Math.floor(Math.random() * GRID_COUNT)
+                };
+                valid = !snake.some(s => s.x === food.x && s.y === food.y) &&
+                        !foods.some(f => f.x === food.x && f.y === food.y);
+                if (valid) foods.push(food);
             }
         }
         
         function draw() {
-            // 清空画布
             ctx.fillStyle = '#0a0a1a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // 绘制网格线（可选）
             ctx.strokeStyle = 'rgba(0, 210, 255, 0.1)';
             ctx.lineWidth = 1;
             for (let i = 0; i <= GRID_COUNT; i++) {
@@ -194,19 +243,22 @@
             }
             
             // 绘制食物
-            ctx.fillStyle = '#ff6b6b';
-            ctx.shadowColor = '#ff6b6b';
-            ctx.shadowBlur = 15;
-            ctx.beginPath();
-            ctx.arc(
-                food.x * GRID_SIZE + GRID_SIZE / 2,
-                food.y * GRID_SIZE + GRID_SIZE / 2,
-                GRID_SIZE / 2 - 2,
-                0,
-                Math.PI * 2
-            );
-            ctx.fill();
-            ctx.shadowBlur = 0;
+            foods.forEach((food, idx) => {
+                const colors = ['#ff6b6b', '#feca57', '#4ecdc4'];
+                ctx.fillStyle = colors[idx % colors.length];
+                ctx.shadowColor = colors[idx % colors.length];
+                ctx.shadowBlur = 15;
+                ctx.beginPath();
+                ctx.arc(
+                    food.x * GRID_SIZE + GRID_SIZE / 2,
+                    food.y * GRID_SIZE + GRID_SIZE / 2,
+                    GRID_SIZE / 2 - 2,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            });
             
             // 绘制蛇
             snake.forEach((segment, index) => {
@@ -242,14 +294,12 @@
                 y: snake[0].y + direction.y
             };
             
-            // 撞墙检测
             if (head.x < 0 || head.x >= GRID_COUNT || head.y < 0 || head.y >= GRID_COUNT) {
                 gameOver();
                 return;
             }
             
-            // 撞自己检测
-            if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
+            if (snake.some(s => s.x === head.x && s.y === head.y)) {
                 gameOver();
                 return;
             }
@@ -257,10 +307,18 @@
             snake.unshift(head);
             
             // 吃食物
-            if (head.x === food.x && head.y === food.y) {
+            const foodIdx = foods.findIndex(f => f.x === head.x && f.y === head.y);
+            if (foodIdx !== -1) {
                 score += 10;
                 document.getElementById('scoreValue').textContent = score;
+                foods.splice(foodIdx, 1);
                 spawnFood();
+                
+                // 检查胜利条件（吃完所有食物）
+                if (foods.length === 0) {
+                    winGame();
+                    return;
+                }
             } else {
                 snake.pop();
             }
@@ -270,6 +328,13 @@
             isRunning = false;
             clearInterval(gameLoop);
             alert(`游戏结束！得分: ${score}\n点击"开始游戏"重新开始`);
+        }
+        
+        function winGame() {
+            isRunning = false;
+            clearInterval(gameLoop);
+            const winRate = DIFFICULTY[currentDifficulty].winRate * 100;
+            alert(`🎉 恭喜通关！\n得分: ${score}\n难度: ${DIFFICULTY[currentDifficulty].name}\n通过率: ${winRate}%\n点击"开始游戏"再来一局`);
         }
         
         function gameStep() {
@@ -283,7 +348,7 @@
             if (isRunning) return;
             isRunning = true;
             if (gameLoop) clearInterval(gameLoop);
-            gameLoop = setInterval(gameStep, 120);
+            gameLoop = setInterval(gameStep, gameSpeed);
         }
         
         function resetGame() {
@@ -312,7 +377,19 @@
             }
         }
         
-        // 键盘控制
+        function setDifficulty(diff) {
+            currentDifficulty = diff;
+            gameSpeed = DIFFICULTY[diff].speed;
+            
+            document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.diff-btn.${diff}`).classList.add('active');
+            
+            if (!isRunning) {
+                initGame();
+                draw();
+            }
+        }
+        
         document.addEventListener('keydown', (e) => {
             switch(e.key) {
                 case 'ArrowUp':
@@ -338,7 +415,6 @@
             }
         });
         
-        // 初始化
         initGame();
         draw();
     </script>
