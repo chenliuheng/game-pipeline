@@ -107,6 +107,31 @@
             color: #a855f7;
         }
         
+        .difficulty-selector {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .diff-btn {
+            padding: 8px 12px;
+            font-size: 0.75rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .diff-btn.newbie { background: #10b981; color: #fff; }
+        .diff-btn.master { background: #f59e0b; color: #fff; }
+        .diff-btn.hell { background: #ef4444; color: #fff; }
+        .diff-btn.active { 
+            transform: scale(1.1);
+            box-shadow: 0 0 10px currentColor;
+        }
+        
         #controls {
             margin-top: 20px;
             display: flex;
@@ -130,27 +155,12 @@
             transform: scale(1.05);
         }
         
-        #difficulty {
-            margin-top: 15px;
-            display: flex;
-            gap: 10px;
-        }
-        
-        #difficulty button {
-            padding: 8px 15px;
-            font-size: 0.85rem;
-            background: rgba(168, 85, 247, 0.3);
-        }
-        
-        #difficulty button.active {
-            background: linear-gradient(90deg, #a855f7, #ec4899);
-        }
-        
         #message {
             margin-top: 15px;
             font-size: 1.2rem;
             color: #feca57;
             min-height: 30px;
+            text-align: center;
         }
     </style>
 </head>
@@ -171,11 +181,10 @@
             <div class="info-value" id="time">0:00</div>
         </div>
     </div>
-    <div id="difficulty">
-        <button onclick="setDifficulty(4)" id="btn4" class="active">4对</button>
-        <button onclick="setDifficulty(6)" id="btn6">6对</button>
-        <button onclick="setDifficulty(8)" id="btn8">8对</button>
-        <button onclick="setDifficulty(10)" id="btn10">10对</button>
+    <div class="difficulty-selector">
+        <button class="diff-btn newbie active" onclick="setDifficulty('newbie')">🌱 新手 (4对)</button>
+        <button class="diff-btn master" onclick="setDifficulty('master')">🎯 大师 (6对)</button>
+        <button class="diff-btn hell" onclick="setDifficulty('hell')">💀 地狱 (10对)</button>
     </div>
     <div id="controls">
         <button onclick="startGame()">开始游戏</button>
@@ -184,6 +193,12 @@
 
     <script>
         const emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵'];
+        
+        const DIFFICULTY = {
+            newbie: { pairs: 4, winRate: 1.0, name: '🌱 新手' },
+            master: { pairs: 6, winRate: 0.2, name: '🎯 大师' },
+            hell: { pairs: 10, winRate: 0.01, name: '💀 地狱' }
+        };
         
         let cards = [];
         let flippedCards = [];
@@ -206,16 +221,13 @@
             const gameContainer = document.getElementById('gameContainer');
             gameContainer.innerHTML = '';
             
-            // 选择emoji
             const selectedEmojis = emojis.slice(0, totalPairs);
             cards = [...selectedEmojis, ...selectedEmojis];
             cards = shuffle(cards);
             
-            // 设置网格
             const cols = totalPairs <= 4 ? 4 : totalPairs <= 6 ? 4 : 5;
             gameContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
             
-            // 创建卡片
             cards.forEach((emoji, index) => {
                 const card = document.createElement('div');
                 card.className = 'card';
@@ -231,8 +243,7 @@
                 gameContainer.appendChild(card);
             });
             
-            // 调整卡片大小
-            const cardSize = totalPairs <= 4 ? 80 : totalPairs <= 6 ? 70 : 60;
+            const cardSize = totalPairs <= 4 ? 80 : totalPairs <= 6 ? 70 : 55;
             document.querySelectorAll('.card').forEach(card => {
                 card.style.width = `${cardSize}px`;
                 card.style.height = `${cardSize}px`;
@@ -284,8 +295,10 @@
         
         function gameWin() {
             clearInterval(timer);
+            const diffKey = Object.keys(DIFFICULTY).find(k => DIFFICULTY[k].pairs === totalPairs);
+            const winRate = DIFFICULTY[diffKey].winRate * 100;
             document.getElementById('message').textContent = 
-                `🎉 恭喜！用时 ${formatTime(seconds)}，${moves} 步`;
+                `🎉 恭喜！用时 ${formatTime(seconds)}，${moves} 步 (通过率: ${winRate}%)`;
         }
         
         function startGame() {
@@ -315,16 +328,15 @@
             return `${m}:${s.toString().padStart(2, '0')}`;
         }
         
-        function setDifficulty(n) {
-            totalPairs = n;
+        function setDifficulty(diff) {
+            totalPairs = DIFFICULTY[diff].pairs;
             
-            document.querySelectorAll('#difficulty button').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`btn${n}`).classList.add('active');
+            document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.diff-btn.${diff}`).classList.add('active');
             
             initGame();
         }
         
-        // 初始化
         initGame();
     </script>
 </body>
