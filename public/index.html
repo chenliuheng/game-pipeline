@@ -52,6 +52,9 @@
             transition: transform 0.3s, box-shadow 0.3s;
             cursor: pointer;
             border: 2px solid transparent;
+            text-decoration: none;
+            color: inherit;
+            display: block;
         }
         
         .game-card:hover {
@@ -110,43 +113,54 @@
     </header>
     
     <div id="gamesContainer">
-        <!-- 游戏卡片将通过 JavaScript 动态加载 -->
+        <a href="games/game-001/" class="game-card">
+            <div class="game-preview">🐍</div>
+            <div class="game-info">
+                <div class="game-title">贪吃蛇</div>
+                <div class="game-description">经典贪吃蛇游戏</div>
+                <span class="game-age">👶 3-99岁</span>
+            </div>
+        </a>
+        
+        <a href="games/game-002/" class="game-card">
+            <div class="game-preview">🧱</div>
+            <div class="game-info">
+                <div class="game-title">俄罗斯方块</div>
+                <div class="game-description">经典益智游戏</div>
+                <span class="game-age">👶 6-99岁</span>
+            </div>
+        </a>
+        
+        <a href="games/game-003/" class="game-card">
+            <div class="game-preview">🧩</div>
+            <div class="game-info">
+                <div class="game-title">数字拼图</div>
+                <div class="game-description">滑动拼图游戏</div>
+                <span class="game-age">👶 4-99岁</span>
+            </div>
+        </a>
+        
+        <a href="games/game-004/" class="game-card">
+            <div class="game-preview">🃏</div>
+            <div class="game-info">
+                <div class="game-title">记忆卡片</div>
+                <div class="game-description">翻牌记忆游戏</div>
+                <span class="game-age">👶 3-99岁</span>
+            </div>
+        </a>
+        
+        <a href="games/game-005/" class="game-card">
+            <div class="game-preview">🏀</div>
+            <div class="game-info">
+                <div class="game-title">弹球游戏</div>
+                <div class="game-description">经典打砖块</div>
+                <span class="game-age">👶 4-99岁</span>
+            </div>
+        </a>
     </div>
     
     <footer>
-        <p>🎮 自动游戏开发流水线 v1.0 | 每7分钟产出一个游戏</p>
+        <p>🎮 自动游戏开发流水线 v1.0</p>
     </footer>
-
-    <script>
-        // 加载游戏列表
-        async function loadGames() {
-            try {
-                const response = await fetch('js/games-list.json');
-                const data = await response.json();
-                const container = document.getElementById('gamesContainer');
-                
-                data.games.forEach(game => {
-                    const card = document.createElement('div');
-                    card.className = 'game-card';
-                    card.onclick = () => window.location.href = game.url;
-                    
-                    card.innerHTML = `
-                        <div class="game-preview">🎮</div>
-                        <div class="game-info">
-                            <div class="game-title">${game.title}</div>
-                            <div class="game-description">${game.description}</div>
-                            <span class="game-age">👶 ${game.ageRange}岁</span>
-                        </div>
-                    `;
-                    
-                    container.appendChild(card);
-                });
-            } catch (error) {
-                console.error('加载游戏列表失败:', error);
-            }
-        }
-        
-        loadGames();
-    </script>
 </body>
 </html>
