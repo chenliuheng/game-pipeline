@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦞 蒙氏教育游戏平台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: linear-gradient(135deg, #1a1a2e, #16213e); min-height: 100vh; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { font-size: 2rem; background: linear-gradient(90deg, #ff6b6b, #feca57); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
+        .tab { padding: 10px 20px; background: rgba(255,255,255,0.1); border-radius: 20px; cursor: pointer; transition: all 0.3s; }
+        .tab.active { background: linear-gradient(90deg, #ff6b6b, #feca57); }
+        .section { display: none; }
+        .section.active { display: block; }
+        .games { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+        .game-card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; text-align: center; text-decoration: none; color: inherit; transition: all 0.3s; border: 2px solid transparent; }
+        .game-card:hover { transform: translateY(-3px); border-color: #4ecdc4; }
+        .game-icon { font-size: 2rem; margin-bottom: 5px; }
+        .game-title { font-size: 0.85rem; color: #4ecdc4; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🦞 蒙氏教育游戏平台</h1>
+        <p>40款蒙氏教育游戏，让孩子快乐学习</p>
+    </header>
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('practical')">日常生活</div>
+        <div class="tab" onclick="showTab('sensorial')">感官训练</div>
+        <div class="tab" onclick="showTab('language')">语言发展</div>
+        <div class="tab" onclick="showTab('math')">数学启蒙</div>
+        <div class="tab" onclick="showTab('cultural')">文化教育</div>
+    </div>
+    
+    <div id="practical" class="section active">
+        <div class="games">
+            <a href="game-006.html" class="game-card"><div class="game-icon">🫗</div><div class="game-title">倒水游戏</div></a>
+            <a href="game-007.html" class="game-card"><div class="game-icon">🥄</div><div class="game-title">勺子传递</div></a>
+            <a href="game-008.html" class="game-card"><div class="game-icon">📿</div><div class="game-title">穿珠子</div></a>
+            <a href="game-009.html" class="game-card"><div class="game-icon">📄</div><div class="game-title">折纸游戏</div></a>
+            <a href="game-010.html" class="game-card"><div class="game-icon">🔘</div><div class="game-title">扣子练习</div></a>
+            <a href="game-011.html" class="game-card"><div class="game-icon">🤐</div><div class="game-title">拉拉链</div></a>
+            <a href="game-012.html" class="game-card"><div class="game-icon">🔩</div><div class="game-title">拧螺丝</div></a>
+            <a href="game-013.html" class="game-card"><div class="game-icon">🧷</div><div class="game-title">夹子游戏</div></a>
+            <a href="game-014.html" class="game-card"><div class="game-icon">🧹</div><div class="game-title">扫地练习</div></a>
+            <a href="game-015.html" class="game-card"><div class="game-icon">👕</div><div class="game-title">整理衣物</div></a>
+        </div>
+    </div>
+    
+    <div id="sensorial" class="section">
+        <div class="games">
+            <a href="game-016.html" class="game-card"><div class="game-icon">🔴</div><div class="game-title">颜色配对</div></a>
+            <a href="game-017.html" class="game-card"><div class="game-icon">📏</div><div class="game-title">大小排序</div></a>
+            <a href="game-018.html" class="game-card"><div class="game-icon">🔷</div><div class="game-title">形状拼板</div></a>
+            <a href="game-019.html" class="game-card"><div class="game-icon">✋</div><div class="game-title">触摸配对</div></a>
+            <a href="game-020.html" class="game-card"><div class="game-icon">👃</div><div class="game-title">嗅觉瓶</div></a>
+            <a href="game-021.html" class="game-card"><div class="game-icon">👅</div><div class="game-title">味觉游戏</div></a>
+            <a href="game-022.html" class="game-card"><div class="game-icon">👂</div><div class="game-title">听觉筒</div></a>
+        </div>
+    </div>
+    
+    <div id="language" class="section">
+        <div class="games">
+            <a href="game-026.html" class="game-card"><div class="game-icon">🔤</div><div class="game-title">字母拼图</div></a>
+            <a href="game-029.html" class="game-card"><div class="game-icon">🧩</div><div class="game-title">看图识字</div></a>
+        </div>
+    </div>
+    
+    <div id="math" class="section">
+        <div class="games">
+            <a href="game-034.html" class="game-card"><div class="game-icon">🔢</div><div class="game-title">数字认知</div></a>
+            <a href="game-035.html" class="game-card"><div class="game-icon">✏️</div><div class="game-title">砂纸数字</div></a>
+            <a href="game-038.html" class="game-card"><div class="game-icon">➕</div><div class="game-title">加法板</div></a>
+            <a href="game-040.html" class="game-card"><div class="game-icon">🍕</div><div class="game-title">分数圆形</div></a>
+        </div>
+    </div>
+    
+    <div id="cultural" class="section">
+        <div class="games">
+            <p style="color:#888;margin:20px;">待开发...</p>
+        </div>
+    </div>
+    
+    <script>
+        function showTab(id) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(id).classList.add('active');
+        }
+    </script>
+</body>
+</html>
