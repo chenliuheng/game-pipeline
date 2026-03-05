@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👕 整理衣物 - 蒙氏教育</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            padding: 20px;
+        }
+        h1 { color: #2e7d32; margin-bottom: 10px; }
+        #wardrobe {
+            width: min(90vw, 400px);
+            background: #8d6e63;
+            border-radius: 15px;
+            padding: 15px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            border: 4px solid #5d4037;
+        }
+        .shelf {
+            background: #d7ccc8;
+            border-radius: 10px;
+            min-height: 100px;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            align-content: flex-start;
+        }
+        .shelf-label {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: #5d4037;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        #clothes pile {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 15px;
+            margin-top: 15px;
+            min-height: 120px;
+            width: min(90vw, 400px);
+        }
+        .clothes-item {
+            width: 50px;
+            height: 50px;
+            font-size: 35px;
+            cursor: grab;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .clothes-item:hover { transform: scale(1.15); }
+        .clothes-item.dragging { opacity: 0.5; }
+        
+        #score { margin-top: 15px; font-size: 1.3rem; color: #2e7d32; }
+    </style>
+</head>
+<body>
+    <h1>👕 整理衣物</h1>
+    <p>把衣服分类放到对应的架子上</p>
+    <div id="clothes-pile"></div>
+    <div id="wardrobe">
+        <div class="shelf-label">👕 上衣区</div>
+        <div class="shelf" id="shelf-tops" data-type="tops"></div>
+        <div class="shelf-label">👖 裤子区</div>
+        <div class="shelf" id="shelf-pants" data-type="pants"></div>
+        <div class="shelf-label">🧦 袜子区</div>
+        <div class="shelf" id="shelf-socks" data-type="socks"></div>
+        <div class="shelf-label">👗 裙子区</div>
+        <div class="shelf" id="shelf-dresses" data-type="dresses"></div>
+    </div>
+    <div id="score">已完成: 0/15</div>
+    
+    <script>
+        const clothesData = [
+            { id: 1, emoji: '👕', type: 'tops' },
+            { id: 2, emoji: '👕', type: 'tops' },
+            { id: 3, emoji: '👕', type: 'tops' },
+            { id: 4, emoji: '👖', type: 'pants' },
+            { id: 5, emoji: '👖', type: 'pants' },
+            { id: 6, emoji: '🧦', type: 'socks' },
+            { id: 7, emoji: '🧦', type: 'socks' },
+            { id: 8, emoji: '🧦', type: 'socks' },
+            { id: 9, emoji: '👗', type: 'dresses' },
+            { id: 10, emoji: '👗', type: 'dresses' },
+            { id: 11, emoji: '👘', type: 'tops' },
+            { id: 12, emoji: '🎽', type: 'tops' },
+            { id: 13, emoji: '🩳', type: 'pants' },
+            { id: 14, emoji: '🩲', type: 'pants' },
+            { id: 15, emoji: '🧦', type: 'socks' }
+        ];
+        
+        // 随机打乱
+        clothesData.sort(() => Math.random() - 0.5);
+        
+        const pile = document.getElementById('clothes-pile');
+        const shelves = document.querySelectorAll('.shelf');
+        let completed = 0;
+        
+        // 创建衣物
+        clothesData.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'clothes-item';
+            el.textContent = item.emoji;
+            el.dataset.type = item.type;
+            el.draggable = true;
+            
+            el.addEventListener('dragstart', dragStart);
+            el.addEventListener('dragend', dragEnd);
+            
+            // 触摸支持
+            el.addEventListener('touchstart', touchStart, {passive: false});
+            el.addEventListener('touchmove', touchMove, {passive: false});
+            el.addEventListener('touchend', touchEnd);
+            
+            pile.appendChild(el);
+        });
+        
+        let draggedItem = null;
+        let touchItem = null;
+        
+        function dragStart() {
+            draggedItem = this;
+            this.classList.add('dragging');
+        }
+        
+        function dragEnd() {
+            this.classList.remove('dragging');
+            draggedItem = null;
+        }
+        
+        shelves.forEach(shelf => {
+            shelf.addEventListener('dragover', e => e.preventDefault());
+            shelf.addEventListener('drop', drop);
+        });
+        
+        function drop(e) {
+            e.preventDefault();
+            const shelfType = this.dataset.type;
+            const itemType = draggedItem.dataset.type;
+            
+            if (shelfType === itemType) {
+                this.appendChild(draggedItem);
+                draggedItem.draggable = false;
+                completed++;
+                updateScore();
+            }
+        }
+        
+        // 触摸支持
+        let touchClone = null;
+        
+        function touchStart(e) {
+            e.preventDefault();
+            touchItem = this;
+            const touch = e.touches[0];
+            
+            touchClone = this.cloneNode(true);
+            touchClone.style.position = 'fixed';
+            touchClone.style.left = touch.clientX - 25 + 'px';
+            touchClone.style.top = touch.clientY - 25 + 'px';
+            touchClone.style.pointerEvents = 'none';
+            touchClone.style.zIndex = '1000';
+            document.body.appendChild(touchClone);
+        }
+        
+        function touchMove(e) {
+            e.preventDefault();
+            if (!touchClone) return;
+            const touch = e.touches[0];
+            touchClone.style.left = touch.clientX - 25 + 'px';
+            touchClone.style.top = touch.clientY - 25 + 'px';
+        }
+        
+        function touchEnd(e) {
+            if (touchClone) {
+                document.body.removeChild(touchClone);
+                touchClone = null;
+            }
+            if (!touchItem) return;
+            
+            // 检查是否放到正确的架子上
+            shelves.forEach(shelf => {
+                const rect = shelf.getBoundingClientRect();
+                const touch = e.changedTouches[0];
+                
+                if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+                    touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+                    
+                    const shelfType = shelf.dataset.type;
+                    const itemType = touchItem.dataset.type;
+                    
+                    if (shelfType === itemType) {
+                        shelf.appendChild(touchItem);
+                        touchItem.draggable = false;
+                        completed++;
+                        updateScore();
+                    }
+                }
+            });
+            
+            touchItem = null;
+        }
+        
+        function updateScore() {
+            document.getElementById('score').textContent = '已完成: ' + completed + '/15';
+            if (completed >= 15) {
+                setTimeout(() => alert('🎉 太好了！衣物都整理好了！'), 300);
+            }
+        }
+    </script>
+</body>
+</html>
