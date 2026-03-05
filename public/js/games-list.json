@@ -1,0 +1,46 @@
+{
+  "games": [
+    {
+      "id": "game-001",
+      "title": "贪吃蛇",
+      "description": "经典贪吃蛇游戏",
+      "ageRange": "3-99",
+      "category": "classic",
+      "url": "games/game-001/"
+    },
+    {
+      "id": "game-002",
+      "title": "俄罗斯方块",
+      "description": "经典益智游戏",
+      "ageRange": "6-99",
+      "category": "puzzle",
+      "url": "games/game-002/"
+    },
+    {
+      "id": "game-003",
+      "title": "数字拼图",
+      "description": "滑动拼图游戏",
+      "ageRange": "4-99",
+      "category": "puzzle",
+      "url": "games/game-003/"
+    },
+    {
+      "id": "game-004",
+      "title": "记忆卡片",
+      "description": "翻牌记忆游戏",
+      "ageRange": "3-99",
+      "category": "memory",
+      "url": "games/game-004/"
+    },
+    {
+      "id": "game-005",
+      "title": "弹球游戏",
+      "description": "经典打砖块",
+      "ageRange": "4-99",
+      "category": "arcade",
+      "url": "games/game-005/"
+    }
+  ],
+  "version": "1.0.0",
+  "lastUpdated": "2026-03-05"
+}

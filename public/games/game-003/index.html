@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>数字拼图 - Sliding Puzzle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+            overflow: hidden;
+            touch-action: none;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #4ecdc4, #44a08d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        #gameContainer {
+            position: relative;
+            border: 4px solid #4ecdc4;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(78, 205, 196, 0.3);
+            padding: 10px;
+            background: #0a0a1a;
+        }
+        
+        #puzzleBoard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            width: min(90vw, 320px);
+            height: min(90vw, 320px);
+        }
+        
+        .tile {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            user-select: none;
+        }
+        
+        .tile:not(.empty):hover {
+            transform: scale(1.03);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .tile.empty {
+            background: transparent;
+            cursor: default;
+        }
+        
+        .tile.correct {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+        }
+        
+        .tile.wrong {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+        }
+        
+        #infoPanel {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .info-box {
+            text-align: center;
+        }
+        
+        .info-label {
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+        
+        #controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 12px 25px;
+            font-size: 1rem;
+            background: linear-gradient(90deg, #4ecdc4, #44a08d);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: scale(1.05);
+        }
+        
+        #difficulty {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        #difficulty button {
+            padding: 8px 15px;
+            font-size: 0.85rem;
+            background: rgba(78, 205, 196, 0.3);
+        }
+        
+        #difficulty button.active {
+            background: linear-gradient(90deg, #4ecdc4, #44a08d);
+        }
+        
+        #message {
+            margin-top: 15px;
+            font-size: 1.2rem;
+            color: #feca57;
+            min-height: 30px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧩 数字拼图</h1>
+    <div id="gameContainer">
+        <div id="puzzleBoard"></div>
+    </div>
+    <div id="infoPanel">
+        <div class="info-box">
+            <div class="info-label">步数</div>
+            <div class="info-value" id="moves">0</div>
+        </div>
+        <div class="info-box">
+            <div class="info-label">时间</div>
+            <div class="info-value" id="time">0:00</div>
+        </div>
+    </div>
+    <div id="difficulty">
+        <button onclick="setDifficulty(3)" id="btn3" class="active">3×3</button>
+        <button onclick="setDifficulty(4)" id="btn4">4×4</button>
+        <button onclick="setDifficulty(5)" id="btn5">5×5</button>
+    </div>
+    <div id="controls">
+        <button onclick="startGame()">开始游戏</button>
+        <button onclick="shuffleBoard()">打乱</button>
+    </div>
+    <div id="message"></div>
+
+    <script>
+        const board = document.getElementById('puzzleBoard');
+        let size = 3;
+        let tiles = [];
+        let emptyIndex = 0;
+        let moves = 0;
+        let timer = null;
+        let seconds = 0;
+        let isRunning = false;
+        
+        function initBoard() {
+            tiles = [];
+            for (let i = 1; i < size * size; i++) {
+                tiles.push(i);
+            }
+            tiles.push(0); // 0 表示空位
+            emptyIndex = tiles.length - 1;
+            renderBoard();
+        }
+        
+        function renderBoard() {
+            board.innerHTML = '';
+            board.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+            
+            tiles.forEach((value, index) => {
+                const tile = document.createElement('div');
+                tile.className = 'tile';
+                
+                if (value === 0) {
+                    tile.classList.add('empty');
+                } else {
+                    tile.textContent = value;
+                    tile.onclick = () => moveTile(index);
+                    
+                    // 检查位置是否正确
+                    if (value === index + 1) {
+                        tile.classList.add('correct');
+                    } else {
+                        tile.classList.add('wrong');
+                    }
+                }
+                
+                board.appendChild(tile);
+            });
+        }
+        
+        function moveTile(index) {
+            if (!isRunning) return;
+            
+            const row = Math.floor(index / size);
+            const col = index % size;
+            const emptyRow = Math.floor(emptyIndex / size);
+            const emptyCol = emptyIndex % size;
+            
+            // 检查是否可以移动（相邻）
+            const canMove = (Math.abs(row - emptyRow) + Math.abs(col - emptyCol)) === 1;
+            
+            if (canMove) {
+                // 交换
+                [tiles[index], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[index]];
+                emptyIndex = index;
+                moves++;
+                document.getElementById('moves').textContent = moves;
+                renderBoard();
+                checkWin();
+            }
+        }
+        
+        function shuffleBoard() {
+            // 使用有效的随机移动来打乱
+            for (let i = 0; i < size * size * 20; i++) {
+                const neighbors = getNeighbors(emptyIndex);
+                const randomIndex = neighbors[Math.floor(Math.random() * neighbors.length)];
+                [tiles[randomIndex], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[randomIndex]];
+                emptyIndex = randomIndex;
+            }
+            
+            // 确保可解（反转最后一步）
+            if (!isSolvable()) {
+                // 交换最后两个非空块
+                for (let i = 0; i < tiles.length - 1; i++) {
+                    if (tiles[i] !== 0 && tiles[i + 1] !== 0) {
+                        [tiles[i], tiles[i + 1]] = [tiles[i + 1], tiles[i]];
+                        break;
+                    }
+                }
+            }
+            
+            moves = 0;
+            seconds = 0;
+            document.getElementById('moves').textContent = moves;
+            document.getElementById('time').textContent = '0:00';
+            renderBoard();
+        }
+        
+        function getNeighbors(index) {
+            const neighbors = [];
+            const row = Math.floor(index / size);
+            const col = index % size;
+            
+            if (row > 0) neighbors.push(index - size); // 上
+            if (row < size - 1) neighbors.push(index + size); // 下
+            if (col > 0) neighbors.push(index - 1); // 左
+            if (col < size - 1) neighbors.push(index + 1); // 右
+            
+            return neighbors;
+        }
+        
+        function isSolvable() {
+            let inversions = 0;
+            const flatTiles = tiles.filter(t => t !== 0);
+            
+            for (let i = 0; i < flatTiles.length; i++) {
+                for (let j = i + 1; j < flatTiles.length; j++) {
+                    if (flatTiles[i] > flatTiles[j]) {
+                        inversions++;
+                    }
+                }
+            }
+            
+            if (size % 2 === 1) {
+                return inversions % 2 === 0;
+            } else {
+                const emptyRow = Math.floor(emptyIndex / size);
+                return (inversions + emptyRow) % 2 === 1;
+            }
+        }
+        
+        function checkWin() {
+            for (let i = 0; i < tiles.length - 1; i++) {
+                if (tiles[i] !== i + 1) return;
+            }
+            
+            isRunning = false;
+            clearInterval(timer);
+            document.getElementById('message').textContent = `🎉 恭喜！用时 ${formatTime(seconds)}，${moves} 步`;
+        }
+        
+        function startGame() {
+            if (isRunning) return;
+            
+            initBoard();
+            shuffleBoard();
+            
+            isRunning = true;
+            moves = 0;
+            seconds = 0;
+            document.getElementById('moves').textContent = moves;
+            document.getElementById('message').textContent = '';
+            
+            if (timer) clearInterval(timer);
+            timer = setInterval(() => {
+                seconds++;
+                document.getElementById('time').textContent = formatTime(seconds);
+            }, 1000);
+        }
+        
+        function formatTime(secs) {
+            const m = Math.floor(secs / 60);
+            const s = secs % 60;
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
+        
+        function setDifficulty(n) {
+            if (isRunning) return;
+            size = n;
+            
+            document.querySelectorAll('#difficulty button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn${n}`).classList.add('active');
+            
+            initBoard();
+        }
+        
+        // 触摸滑动支持
+        let touchStartX, touchStartY;
+        
+        board.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+        
+        board.addEventListener('touchend', (e) => {
+            if (!isRunning) return;
+            
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const dx = touchEndX - touchStartX;
+            const dy = touchEndY - touchStartY;
+            
+            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 30) {
+                // 水平滑动
+                const row = Math.floor(emptyIndex / size);
+                if (dx > 0 && emptyIndex % size > 0) {
+                    moveTile(emptyIndex - 1);
+                } else if (dx < 0 && emptyIndex % size < size - 1) {
+                    moveTile(emptyIndex + 1);
+                }
+            } else if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 30) {
+                // 垂直滑动
+                if (dy > 0 && Math.floor(emptyIndex / size) > 0) {
+                    moveTile(emptyIndex - size);
+                } else if (dy < 0 && Math.floor(emptyIndex / size) < size - 1) {
+                    moveTile(emptyIndex + size);
+                }
+            }
+        });
+        
+        // 初始化
+        initBoard();
+    </script>
+</body>
+</html>
