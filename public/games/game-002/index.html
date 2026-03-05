@@ -85,6 +85,30 @@
             margin: 0 auto;
         }
         
+        .difficulty-selector {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .diff-btn {
+            flex: 1;
+            padding: 8px 5px;
+            font-size: 0.75rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .diff-btn.newbie { background: #10b981; color: #fff; }
+        .diff-btn.master { background: #f59e0b; color: #fff; }
+        .diff-btn.hell { background: #ef4444; color: #fff; }
+        .diff-btn.active { 
+            transform: scale(1.1);
+            box-shadow: 0 0 10px currentColor;
+        }
+        
         #controls {
             margin-top: 15px;
             display: flex;
@@ -93,7 +117,7 @@
             justify-content: center;
         }
         
-        button {
+        button.action-btn {
             padding: 10px 20px;
             font-size: 0.9rem;
             background: linear-gradient(90deg, #ff6b6b, #feca57);
@@ -104,12 +128,8 @@
             transition: transform 0.2s;
         }
         
-        button:hover {
+        button.action-btn:hover {
             transform: scale(1.05);
-        }
-        
-        button:active {
-            transform: scale(0.95);
         }
         
         #mobileControls {
@@ -163,21 +183,30 @@
                 <div class="info-value" id="level">1</div>
             </div>
             <div class="info-box">
+                <div class="info-label">难度</div>
+                <div class="info-value" id="difficulty">新手</div>
+                <div class="difficulty-selector">
+                    <button class="diff-btn newbie active" onclick="setDifficulty('newbie')">新手</button>
+                    <button class="diff-btn master" onclick="setDifficulty('master')">大师</button>
+                    <button class="diff-btn hell" onclick="setDifficulty('hell')">地狱</button>
+                </div>
+            </div>
+            <div class="info-box">
                 <div class="info-label">下一个</div>
                 <canvas id="nextCanvas" width="80" height="80"></canvas>
             </div>
         </div>
     </div>
     <div id="controls">
-        <button onclick="startGame()">开始</button>
-        <button onclick="resetGame()">重置</button>
+        <button class="action-btn" onclick="startGame()">开始</button>
+        <button class="action-btn" onclick="resetGame()">重置</button>
     </div>
     <div id="mobileControls">
-        <button onclick="moveLeft()">⬅️</button>
-        <button onclick="rotate()">🔄</button>
-        <button onclick="moveRight()">➡️</button>
+        <button class="action-btn" onclick="moveLeft()">⬅️</button>
+        <button class="action-btn" onclick="rotate()">🔄</button>
+        <button class="action-btn" onclick="moveRight()">➡️</button>
         <button></button>
-        <button onclick="drop()">⬇️</button>
+        <button class="action-btn" onclick="drop()">⬇️</button>
         <button></button>
     </div>
     <div id="instructions">
@@ -194,6 +223,17 @@
         const COLS = 10;
         const ROWS = 20;
         const BLOCK_SIZE = 28;
+        
+        // 难度配置
+        const DIFFICULTY = {
+            newbie: { speed: 1000, name: '新手', winRate: 1.0 },
+            master: { speed: 400, name: '大师', winRate: 0.2 },
+            hell: { speed: 150, name: '地狱', winRate: 0.01 }
+        };
+        
+        let currentDifficulty = 'newbie';
+        let gameSpeed = DIFFICULTY.newbie.speed;
+        
         const COLORS = [
             null,
             '#00ffff', // I - 青色
@@ -326,6 +366,7 @@
                     if (piece.shape[y][x]) {
                         const newX = piece.x + x + offsetX;
                         const newY = piece.y + y + offsetY;
+                        // 修复：严格边界检测
                         if (newX < 0 || newX >= COLS || newY >= ROWS) {
                             return true;
                         }
@@ -359,7 +400,7 @@
                 }
             }
             if (lines > 0) {
-                score += lines * 100 * lines; // 连续消除加分
+                score += lines * 100 * lines;
                 level = Math.floor(score / 1000) + 1;
                 document.getElementById('score').textContent = score;
                 document.getElementById('level').textContent = level;
@@ -373,8 +414,8 @@
             const oldShape = currentPiece.shape;
             currentPiece.shape = rotated;
             
-            // 如果旋转后碰撞，尝试左右移动
             if (collide(currentPiece)) {
+                // 尝试左右移动
                 if (!collide(currentPiece, -1, 0)) {
                     currentPiece.x -= 1;
                 } else if (!collide(currentPiece, 1, 0)) {
@@ -459,6 +500,20 @@
             draw();
         }
         
+        function setDifficulty(diff) {
+            currentDifficulty = diff;
+            gameSpeed = DIFFICULTY[diff].speed;
+            
+            document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.diff-btn.${diff}`).classList.add('active');
+            document.getElementById('difficulty').textContent = DIFFICULTY[diff].name;
+            
+            if (isRunning) {
+                clearInterval(gameLoop);
+                gameLoop = setInterval(update, gameSpeed);
+            }
+        }
+        
         function startGame() {
             if (isRunning) return;
             initBoard();
@@ -471,7 +526,7 @@
             document.getElementById('level').textContent = level;
             
             if (gameLoop) clearInterval(gameLoop);
-            gameLoop = setInterval(update, Math.max(100, 800 - (level - 1) * 100));
+            gameLoop = setInterval(update, gameSpeed);
         }
         
         function resetGame() {
