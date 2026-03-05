@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title">🧷 夹子游戏 - 蒙氏教育</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            padding: 20px;
+        }
+        h1 { color: #1565c0; margin-bottom: 10px; }
+        #game-area {
+            width: min(90vw, 450px);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .line {
+            height: 8px;
+            background: #90a4ae;
+            border-radius: 4px;
+            position: relative;
+        }
+        .line-1 { background: #f44336; }
+        .line-2 { background: #2196f3; }
+        .line-3 { background: #4caf50; }
+        .line-4 { background: #ffeb3b; }
+        
+        .clothespin {
+            width: 30px;
+            height: 60px;
+            position: absolute;
+            top: -26px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .clothespin:hover { transform: scale(1.1); }
+        .clothespin .top {
+            width: 20px;
+            height: 20px;
+            background: #795548;
+            border-radius: 50% 50% 0 0;
+        }
+        .clothespin .body {
+            width: 8px;
+            height: 35px;
+            background: #8d6e63;
+            border-radius: 0 0 2px 2px;
+        }
+        .clothespin.red .top, .clothespin.red .body { background: #f44336; }
+        .clothespin.blue .top, .clothespin.blue .body { background: #2196f3; }
+        .clothespin.green .top, .clothespin.green .body { background: #4caf50; }
+        .clothespin.yellow .top, .clothespin.yellow .body { background: #ffeb3b; }
+        
+        .clothespin.attached {
+            position: absolute;
+            top: -26px;
+        }
+        
+        #pins-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 15px;
+        }
+        
+        #score { margin-top: 15px; font-size: 1.3rem; color: #1565c0; }
+        #message { margin-top: 10px; color: #666; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <h1>🧷 夹子游戏</h1>
+    <p>把相同颜色的夹子夹到对应颜色的绳子上</p>
+    <div id="game-area">
+        <div class="line line-1" id="line-red"></div>
+        <div class="line line-2" id="line-blue"></div>
+        <div class="line line-3" id="line-green"></div>
+        <div class="line line-4" id="line-yellow"></div>
+    </div>
+    <div id="pins-container"></div>
+    <div id="score">已夹上: 0/16</div>
+    <div id="message">每个颜色4个夹子</div>
+    
+    <script>
+        const colors = ['red', 'blue', 'green', 'yellow'];
+        const pins = [];
+        
+        // 生成夹子
+        colors.forEach(color => {
+            for (let i = 0; i < 4; i++) {
+                pins.push({ id: pins.length, color: color, attached: false });
+            }
+        });
+        
+        // 随机打乱
+        pins.sort(() => Math.random() - 0.5);
+        
+        const container = document.getElementById('pins-container');
+        let completed = 0;
+        
+        function render() {
+            container.innerHTML = '';
+            pins.forEach(pin => {
+                if (!pin.attached) {
+                    const el = document.createElement('div');
+                    el.className = 'clothespin ' + pin.color;
+                    el.innerHTML = '<div class="top"></div><div class="body"></div>';
+                    el.onclick = () => tryAttach(pin, el);
+                    container.appendChild(el);
+                }
+            });
+        }
+        
+        function tryAttach(pin, el) {
+            const line = document.getElementById('line-' + pin.color);
+            const existingPins = line.querySelectorAll('.clothespin').length;
+            
+            if (existingPins < 4) {
+                // 计算位置
+                const lineRect = line.getBoundingClientRect();
+                const newLeft = 30 + existingPins * 80;
+                
+                // 创建已连接的夹子
+                const attached = document.createElement('div');
+                attached.className = 'clothespin ' + pin.color + ' attached';
+                attached.style.left = newLeft + 'px';
+                attached.innerHTML = '<div class="top"></div><div class="body"></div>';
+                line.appendChild(attached);
+                
+                pin.attached = true;
+                el.remove();
+                completed++;
+                
+                document.getElementById('score').textContent = '已夹上: ' + completed + '/16';
+                
+                if (completed >= 16) {
+                    setTimeout(() => alert('🎉 完成！所有夹子都夹好了！'), 300);
+                }
+            }
+        }
+        
+        render();
+    </script>
+</body>
+</html>
