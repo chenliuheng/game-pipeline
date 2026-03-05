@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👂 听觉筒 - 蒙氏教育</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: linear-gradient(135deg, #e0f7fa, #b2ebf2); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            padding: 20px;
+        }
+        h1 { color: #00838f; margin-bottom: 10px; }
+        #tubes {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .tube {
+            width: 40px;
+            height: 120px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0.4));
+            border: 3px solid #0097a7;
+            border-radius: 20px 20px 5px 5px;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding-bottom: 10px;
+        }
+        .tube:hover { transform: scale(1.1); }
+        .tube::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 15px;
+            background: #0097a7;
+            border-radius: 5px 5px 0 0;
+        }
+        .tube .fill {
+            width: 80%;
+            border-radius: 0 0 15px 15px;
+            transition: height 0.3s;
+        }
+        .tube .number {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 14px;
+            color: #006064;
+            font-weight: bold;
+        }
+        
+        #matching-area {
+            display: flex;
+            gap: 30px;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 15px;
+        }
+        .sound-item {
+            width: 70px;
+            height: 70px;
+            background: #fff;
+            border: 3px dashed #0097a7;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .sound-item:hover { transform: scale(1.05); }
+        .sound-item.selected { border-color: #4caf50; background: #e8f5e9; }
+        
+        #score { margin-top: 15px; font-size: 1.3rem; color: #00838f; }
+        #message { margin-top: 10px; color: #666; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>👂 听觉筒游戏</h1>
+    <p>摇晃试管听声音，找出相同音量的配对</p>
+    
+    <div id="tubes"></div>
+    
+    <div id="matching-area">
+        <div class="sound-item" data-volume="1" onclick="match(this)">
+            <span style="font-size:30px">🔈</span>
+            <span style="font-size:10px">轻声</span>
+        </div>
+        <div class="sound-item" data-volume="2" onclick="match(this)">
+            <span style="font-size:30px">🔉</span>
+            <span style="font-size:10px">中声</span>
+        </div>
+        <div class="sound-item" data-volume="3" onclick="match(this)">
+            <span style="font-size:30px">🔊</span>
+            <span style="font-size:10px">大声</span>
+        </div>
+    </div>
+    
+    <div id="score">配对成功: 0/3</div>
+    <div id="message">点击试管摇晃听声音</div>
+    
+    <script>
+        // 生成三对不同音量的试管
+        const tubes = [
+            { id: 1, volume: 1, color: '#e8f5e9' },
+            { id: 2, volume: 1, color: '#c8e6c9' },
+            { id: 3, volume: 2, color: '#fff3e0' },
+            { id: 4, volume: 2, color: '#ffe0b2' },
+            { id: 5, volume: 3, color: '#ffebee' },
+            { id: 6, volume: 3, color: '#ffcdd2' }
+        ];
+        
+        // 打乱
+        tubes.sort(() => Math.random() - 0.5);
+        
+        const tubesContainer = document.getElementById('tubes');
+        tubes.forEach(tube => {
+            const el = document.createElement('div');
+            el.className = 'tube';
+            el.dataset.volume = tube.volume;
+            el.dataset.id = tube.id;
+            el.onclick = () => playSound(tube.volume, el);
+            
+            const fill = document.createElement('div');
+            fill.className = 'fill';
+            fill.style.background = tube.color;
+            fill.style.height = '60%';
+            
+            const number = document.createElement('div');
+            number.className = 'number';
+            number.textContent = tube.id;
+            
+            el.appendChild(fill);
+            el.appendChild(number);
+            tubesContainer.appendChild(el);
+        });
+        
+        let selectedTube = null;
+        let matched = 0;
+        let matchedPairs = [];
+        
+        function playSound(volume, tube) {
+            if (tube.classList.contains('matched')) return;
+            
+            // 播放不同音量的声音
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 440;
+            gainNode.gain.value = volume * 0.15;
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.3);
+            
+            // 摇晃动画
+            tube.style.animation = 'shake 0.3s';
+            setTimeout(() => tube.style.animation = '', 300);
+            
+            // 选择试管
+            if (selectedTube && selectedTube !== tube) {
+                // 检查配对
+                if (selectedTube.dataset.volume === tube.dataset.volume) {
+                    // 配对成功
+                    selectedTube.classList.add('matched');
+                    tube.classList.add('matched');
+                    matched++;
+                    document.getElementById('score').textContent = '配对成功: ' + matched + '/3';
+                    document.getElementById('message').textContent = '🎉 配对成功！';
+                    
+                    if (matched >= 3) {
+                        setTimeout(() => alert('🎉 太棒了！所有声音都配对成功！'), 300);
+                    }
+                } else {
+                    document.getElementById('message').textContent = '😕 声音不一样，再试试！';
+                }
+                selectedTube = null;
+            } else if (!selectedTube) {
+                selectedTube = tube;
+                const volText = volume === 1 ? '轻' : volume === 2 ? '中' : '重';
+                document.getElementById('message').textContent = '听到' + volText + '声，再找一个相同的';
+            }
+        }
+        
+        function match(item) {
+            // 这个模式让用户选择声音大小来匹配
+            if (!selectedTube) {
+                document.getElementById('message').textContent = '请先点击试管听声音！';
+                return;
+            }
+            
+            const tubeVol = parseInt(selectedTube.dataset.volume);
+            const itemVol = parseInt(item.dataset.volume);
+            
+            if (tubeVol === itemVol) {
+                selectedTube.classList.add('matched');
+                matched++;
+                document.getElementById('score').textContent = '配对成功: ' + matched + '/3';
+                document.getElementById('message').textContent = '🎉 配对成功！';
+                
+                if (matched >= 3) {
+                    setTimeout(() => alert('🎉 太棒了！所有声音都配对成功！'), 300);
+                }
+            } else {
+                document.getElementById('message').textContent = '😕 不对，再试试！';
+            }
+            selectedTube = null;
+        }
+        
+        // 添加摇晃动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: rotate(0); }
+                25% { transform: rotate(-15deg); }
+                75% { transform: rotate(15deg); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
