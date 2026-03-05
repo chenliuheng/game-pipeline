@@ -44,7 +44,6 @@
         
         #puzzleBoard {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
             gap: 5px;
             width: min(90vw, 320px);
             height: min(90vw, 320px);
@@ -102,6 +101,29 @@
             color: #4ecdc4;
         }
         
+        .difficulty-selector {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .diff-btn {
+            padding: 8px 15px;
+            font-size: 0.8rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .diff-btn.newbie { background: #10b981; color: #fff; }
+        .diff-btn.master { background: #f59e0b; color: #fff; }
+        .diff-btn.hell { background: #ef4444; color: #fff; }
+        .diff-btn.active { 
+            transform: scale(1.1);
+            box-shadow: 0 0 10px currentColor;
+        }
+        
         #controls {
             margin-top: 20px;
             display: flex;
@@ -121,22 +143,6 @@
         
         button:hover {
             transform: scale(1.05);
-        }
-        
-        #difficulty {
-            margin-top: 15px;
-            display: flex;
-            gap: 10px;
-        }
-        
-        #difficulty button {
-            padding: 8px 15px;
-            font-size: 0.85rem;
-            background: rgba(78, 205, 196, 0.3);
-        }
-        
-        #difficulty button.active {
-            background: linear-gradient(90deg, #4ecdc4, #44a08d);
         }
         
         #message {
@@ -162,10 +168,10 @@
             <div class="info-value" id="time">0:00</div>
         </div>
     </div>
-    <div id="difficulty">
-        <button onclick="setDifficulty(3)" id="btn3" class="active">3×3</button>
-        <button onclick="setDifficulty(4)" id="btn4">4×4</button>
-        <button onclick="setDifficulty(5)" id="btn5">5×5</button>
+    <div class="difficulty-selector">
+        <button class="diff-btn newbie active" onclick="setDifficulty('newbie')">🌱 新手 (3x3)</button>
+        <button class="diff-btn master" onclick="setDifficulty('master')">🎯 大师 (4x4)</button>
+        <button class="diff-btn hell" onclick="setDifficulty('hell')">💀 地狱 (5x5)</button>
     </div>
     <div id="controls">
         <button onclick="startGame()">开始游戏</button>
@@ -175,6 +181,13 @@
 
     <script>
         const board = document.getElementById('puzzleBoard');
+        
+        const DIFFICULTY = {
+            newbie: { size: 3, winRate: 1.0, name: '🌱 新手' },
+            master: { size: 4, winRate: 0.2, name: '🎯 大师' },
+            hell: { size: 5, winRate: 0.01, name: '💀 地狱' }
+        };
+        
         let size = 3;
         let tiles = [];
         let emptyIndex = 0;
@@ -188,7 +201,7 @@
             for (let i = 1; i < size * size; i++) {
                 tiles.push(i);
             }
-            tiles.push(0); // 0 表示空位
+            tiles.push(0);
             emptyIndex = tiles.length - 1;
             renderBoard();
         }
@@ -207,7 +220,6 @@
                     tile.textContent = value;
                     tile.onclick = () => moveTile(index);
                     
-                    // 检查位置是否正确
                     if (value === index + 1) {
                         tile.classList.add('correct');
                     } else {
@@ -227,11 +239,9 @@
             const emptyRow = Math.floor(emptyIndex / size);
             const emptyCol = emptyIndex % size;
             
-            // 检查是否可以移动（相邻）
             const canMove = (Math.abs(row - emptyRow) + Math.abs(col - emptyCol)) === 1;
             
             if (canMove) {
-                // 交换
                 [tiles[index], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[index]];
                 emptyIndex = index;
                 moves++;
@@ -242,17 +252,14 @@
         }
         
         function shuffleBoard() {
-            // 使用有效的随机移动来打乱
-            for (let i = 0; i < size * size * 20; i++) {
+            for (let i = 0; i < size * size * 50; i++) {
                 const neighbors = getNeighbors(emptyIndex);
                 const randomIndex = neighbors[Math.floor(Math.random() * neighbors.length)];
                 [tiles[randomIndex], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[randomIndex]];
                 emptyIndex = randomIndex;
             }
             
-            // 确保可解（反转最后一步）
             if (!isSolvable()) {
-                // 交换最后两个非空块
                 for (let i = 0; i < tiles.length - 1; i++) {
                     if (tiles[i] !== 0 && tiles[i + 1] !== 0) {
                         [tiles[i], tiles[i + 1]] = [tiles[i + 1], tiles[i]];
@@ -273,10 +280,10 @@
             const row = Math.floor(index / size);
             const col = index % size;
             
-            if (row > 0) neighbors.push(index - size); // 上
-            if (row < size - 1) neighbors.push(index + size); // 下
-            if (col > 0) neighbors.push(index - 1); // 左
-            if (col < size - 1) neighbors.push(index + 1); // 右
+            if (row > 0) neighbors.push(index - size);
+            if (row < size - 1) neighbors.push(index + size);
+            if (col > 0) neighbors.push(index - 1);
+            if (col < size - 1) neighbors.push(index + 1);
             
             return neighbors;
         }
@@ -308,7 +315,8 @@
             
             isRunning = false;
             clearInterval(timer);
-            document.getElementById('message').textContent = `🎉 恭喜！用时 ${formatTime(seconds)}，${moves} 步`;
+            const winRate = DIFFICULTY[Object.keys(DIFFICULTY).find(k => DIFFICULTY[k].size === size)].winRate * 100;
+            document.getElementById('message').textContent = `🎉 恭喜！用时 ${formatTime(seconds)}，${moves} 步 (通过率: ${winRate}%)`;
         }
         
         function startGame() {
@@ -336,17 +344,16 @@
             return `${m}:${s.toString().padStart(2, '0')}`;
         }
         
-        function setDifficulty(n) {
+        function setDifficulty(diff) {
             if (isRunning) return;
-            size = n;
+            size = DIFFICULTY[diff].size;
             
-            document.querySelectorAll('#difficulty button').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`btn${n}`).classList.add('active');
+            document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.diff-btn.${diff}`).classList.add('active');
             
             initBoard();
         }
         
-        // 触摸滑动支持
         let touchStartX, touchStartY;
         
         board.addEventListener('touchstart', (e) => {
@@ -363,7 +370,6 @@
             const dy = touchEndY - touchStartY;
             
             if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 30) {
-                // 水平滑动
                 const row = Math.floor(emptyIndex / size);
                 if (dx > 0 && emptyIndex % size > 0) {
                     moveTile(emptyIndex - 1);
@@ -371,7 +377,6 @@
                     moveTile(emptyIndex + 1);
                 }
             } else if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 30) {
-                // 垂直滑动
                 if (dy > 0 && Math.floor(emptyIndex / size) > 0) {
                     moveTile(emptyIndex - size);
                 } else if (dy < 0 && Math.floor(emptyIndex / size) < size - 1) {
@@ -380,7 +385,6 @@
             }
         });
         
-        // 初始化
         initBoard();
     </script>
 </body>
