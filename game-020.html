@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👃 嗅觉瓶 - 蒙氏教育</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: linear-gradient(135deg, #f3e5f5, #e1bee7); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            padding: 20px;
+        }
+        h1 { color: #7b1fa2; margin-bottom: 10px; }
+        #game-area {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .bottle-row {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        .bottle {
+            width: 60px;
+            height: 100px;
+            background: rgba(255,255,255,0.6);
+            border: 3px solid #9c27b0;
+            border-radius: 10px 10px 30px 30px;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            overflow: hidden;
+        }
+        .bottle:hover { transform: scale(1.1); }
+        .bottle::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
+            background: #9c27b0;
+            border-radius: 3px;
+        }
+        .bottle .smell {
+            position: absolute;
+            bottom: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+        .bottle .label {
+            position: absolute;
+            top: 30px;
+            font-size: 24px;
+        }
+        .matched {
+            background: rgba(76, 175, 80, 0.3) !important;
+            border-color: #4caf50 !important;
+        }
+        
+        .sample-row {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 15px;
+        }
+        .sample {
+            width: 60px;
+            height: 100px;
+            background: rgba(255,255,255,0.8);
+            border: 3px dashed #7b1fa2;
+            border-radius: 10px 10px 30px 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .sample::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
+            background: #7b1fa2;
+            border-radius: 3px;
+        }
+        .sample .label { font-size: 24px; }
+        .sample .smell { font-size: 11px; color: #666; margin-top: 5px; }
+        
+        #score { margin-top: 20px; font-size: 1.3rem; color: #7b1fa2; }
+        #message { margin-top: 10px; color: #666; }
+    </style>
+</head>
+<body>
+    <h1>👃 嗅觉瓶游戏</h1>
+    <p>闻一闻，然后把相同的味道配对</p>
+    
+    <div class="sample-row">
+        <div class="sample" id="sample1">
+            <div class="label">🍋</div>
+            <div class="smell">柠檬</div>
+        </div>
+        <div class="sample" id="sample2">
+            <div class="label">🌸</div>
+            <div class="smell">花香</div>
+        </div>
+        <div class="sample" id="sample3">
+            <div class="label">☕</div>
+            <div class="smell">咖啡</div>
+        </div>
+    </div>
+    
+    <div id="game-area">
+        <div class="bottle-row">
+            <div class="bottle" data-smell="lemon" onclick="check(this)">
+                <div class="label">❓</div>
+                <div class="smell">?</div>
+            </div>
+            <div class="bottle" data-smell="flower" onclick="check(this)">
+                <div class="label">❓</div>
+                <div class="smell">?</div>
+            </div>
+            <div class="bottle" data-smell="coffee" onclick="check(this)">
+                <div class="label">❓</div>
+                <div class="smell">?</div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="score">配对成功: 0/3</div>
+    <div id="message">点击瓶子闻味道</div>
+    
+    <script>
+        const smells = [
+            { id: 'lemon', emoji: '🍋', name: '柠檬' },
+            { id: 'flower', emoji: '🌸', name: '花香' },
+            { id: 'coffee', emoji: '☕', name: '咖啡' }
+        ];
+        
+        // 打乱顺序
+        const bottles = document.querySelectorAll('.bottle');
+        const shuffled = [...smells].sort(() => Math.random() - 0.5);
+        
+        bottles.forEach((bottle, index) => {
+            bottle.dataset.answer = shuffled[index].id;
+        });
+        
+        let selectedSample = null;
+        let matched = 0;
+        
+        // 样品点击
+        document.querySelectorAll('.sample').forEach(sample => {
+            sample.addEventListener('click', () => {
+                // 显示选中的样品
+                document.querySelectorAll('.sample').forEach(s => s.style.borderColor = '#7b1fa2');
+                sample.style.borderColor = '#4caf50';
+                selectedSample = sample.id;
+                
+                const smellName = sample.querySelector('.smell').textContent;
+                document.getElementById('message').textContent = '你闻到了: ' + smellName;
+                
+                // 模拟闻味道
+                simulateSmell(smellName);
+            });
+        });
+        
+        function simulateSmell(smell) {
+            // 在实际中这里会让用户闻到对应的味道
+            // 由于是网页，我们用视觉和文字提示
+        }
+        
+        function check(bottle) {
+            if (bottle.classList.contains('matched')) return;
+            
+            if (!selectedSample) {
+                alert('请先点击上方的样品闻味道！');
+                return;
+            }
+            
+            let bottleAnswer = bottle.dataset.answer;
+            let sampleId = selectedSample;
+            
+            // 检查是否匹配
+            let isMatch = false;
+            if (sampleId === 'sample1' && bottleAnswer === 'lemon') isMatch = true;
+            if (sampleId === 'sample2' && bottleAnswer === 'flower') isMatch = true;
+            if (sampleId === 'sample3' && bottleAnswer === 'coffee') isMatch = true;
+            
+            if (isMatch) {
+                // 显示正确答案
+                const smellData = smells.find(s => s.id === bottleAnswer);
+                bottle.querySelector('.label').textContent = smellData.emoji;
+                bottle.querySelector('.smell').textContent = smellData.name;
+                bottle.classList.add('matched');
+                matched++;
+                
+                document.getElementById('score').textContent = '配对成功: ' + matched + '/3';
+                document.getElementById('message').textContent = '🎉 配对成功！';
+                
+                if (matched >= 3) {
+                    setTimeout(() => alert('🎉 太棒了！所有味道都配对成功！'), 300);
+                }
+            } else {
+                bottle.style.animation = 'shake 0.3s';
+                setTimeout(() => bottle.style.animation = '', 300);
+                document.getElementById('message').textContent = '😕 味道不对，再试试！';
+            }
+        }
+        
+        // 添加摇晃动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-10px); }
+                75% { transform: translateX(10px); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
