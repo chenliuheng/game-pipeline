@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔩 拧螺丝 - 蒙氏教育</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: linear-gradient(135deg, #eceff1, #cfd8dc); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            padding: 20px;
+        }
+        h1 { color: #455a64; margin-bottom: 10px; }
+        #game-board {
+            width: min(90vw, 400px);
+            background: #fff;
+            border-radius: 20px;
+            border: 4px solid #607d8b;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .screw-hole {
+            width: 60px;
+            height: 60px;
+            background: #cfd8dc;
+            border-radius: 50%;
+            border: 3px dashed #90a4ae;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .screw {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #ffc107, #ff9800);
+            border-radius: 50%;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+            user-select: none;
+            position: absolute;
+        }
+        .screw:hover { transform: scale(1.1); }
+        .screw.dragging { cursor: grabbing; transform: scale(1.2); z-index: 100; }
+        .screw.silver { background: linear-gradient(135deg, #b0bec5, #78909c); }
+        .screw.bronze { background: linear-gradient(135deg, #d7ccc8, #a1887f); }
+        .screw.copper { background: linear-gradient(135deg, #ffccbc, #ff8a65); }
+        .hole-1 { border-color: #ffc107; }
+        .hole-2 { border-color: #b0bec5; }
+        .hole-3 { border-color: #d7ccc8; }
+        .hole-4 { border-color: #ffccbc; }
+        #score { margin-top: 20px; font-size: 1.3rem; color: #455a64; text-align: center; }
+        #instructions { margin-top: 10px; color: #78909c; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <h1>🔩 拧螺丝游戏</h1>
+    <p id="instructions">把螺丝拧到对应颜色的孔里</p>
+    <div id="game-board">
+        <div class="screw-hole hole-1" data-color="gold"></div>
+        <div class="screw-hole hole-2" data-color="silver"></div>
+        <div class="screw-hole hole-3" data-color="bronze"></div>
+        <div class="screw-hole hole-4" data-color="copper"></div>
+    </div>
+    <div id="screws-container" style="display:flex;gap:15px;margin-top:20px;flex-wrap:wrap;justify-content:center;max-width:400px;">
+        <div class="screw" data-color="gold" draggable="true">🔩</div>
+        <div class="screw" data-color="silver" draggable="true">🔩</div>
+        <div class="screw bronze" data-color="bronze" draggable="true">🔩</div>
+        <div class="screw copper" data-color="copper" draggable="true">🔩</div>
+    </div>
+    <div id="score">已完成: 0/4</div>
+    <script>
+        let completed = 0;
+        const screws = document.querySelectorAll('.screw');
+        const holes = document.querySelectorAll('.screw-hole');
+        
+        // 触摸和拖拽支持
+        let draggedItem = null;
+        
+        screws.forEach(screw => {
+            // 鼠标事件
+            screw.addEventListener('dragstart', dragStart);
+            screw.addEventListener('dragend', dragEnd);
+            
+            // 触摸事件
+            screw.addEventListener('touchstart', touchStart, {passive: false});
+            screw.addEventListener('touchmove', touchMove, {passive: false});
+            screw.addEventListener('touchend', touchEnd);
+        });
+        
+        holes.forEach(hole => {
+            hole.addEventListener('dragover', dragOver);
+            hole.addEventListener('drop', drop);
+            hole.addEventListener('touchend', touchDrop);
+        });
+        
+        function dragStart(e) {
+            draggedItem = this;
+            this.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', this.dataset.color);
+        }
+        
+        function dragEnd() {
+            this.classList.remove('dragging');
+            draggedItem = null;
+        }
+        
+        function dragOver(e) {
+            e.preventDefault();
+        }
+        
+        function drop(e) {
+            e.preventDefault();
+            const color = e.dataTransfer.getData('text/plain');
+            const holeColor = this.dataset.color;
+            
+            if (color === holeColor && !this.querySelector('.screw')) {
+                const screw = document.querySelector(`.screw[data-color="${color}"]`);
+                this.appendChild(screw);
+                screw.style.position = 'static';
+                screw.draggable = false;
+                completed++;
+                updateScore();
+            }
+        }
+        
+        // 触摸支持
+        let touchScrew = null;
+        let touchClone = null;
+        
+        function touchStart(e) {
+            e.preventDefault();
+            touchScrew = this;
+            const touch = e.touches[0];
+            
+            // 创建克隆元素用于拖拽显示
+            touchClone = this.cloneNode(true);
+            touchClone.style.position = 'fixed';
+            touchClone.style.left = touch.clientX - 25 + 'px';
+            touchClone.style.top = touch.clientY - 25 + 'px';
+            touchClone.style.pointerEvents = 'none';
+            touchClone.style.zIndex = '1000';
+            document.body.appendChild(touchClone);
+            
+            this.style.opacity = '0.5';
+        }
+        
+        function touchMove(e) {
+            e.preventDefault();
+            if (!touchClone) return;
+            const touch = e.touches[0];
+            touchClone.style.left = touch.clientX - 25 + 'px';
+            touchClone.style.top = touch.clientY - 25 + 'px';
+        }
+        
+        function touchEnd(e) {
+            if (touchClone) {
+                document.body.removeChild(touchClone);
+                touchClone = null;
+            }
+            if (touchScrew) {
+                touchScrew.style.opacity = '1';
+                touchScrew = null;
+            }
+        }
+        
+        function touchDrop(e) {
+            if (!touchScrew) return;
+            const screwColor = touchScrew.dataset.color;
+            const holeColor = this.dataset.color;
+            
+            if (screwColor === holeColor && !this.querySelector('.screw')) {
+                this.appendChild(touchScrew);
+                touchScrew.style.position = 'static';
+                touchScrew.draggable = false;
+                touchScrew.style.opacity = '1';
+                completed++;
+                updateScore();
+                touchScrew = null;
+            }
+        }
+        
+        function updateScore() {
+            document.getElementById('score').textContent = '已完成: ' + completed + '/4';
+            if (completed >= 4) {
+                setTimeout(() => alert('🎉 太棒了！所有螺丝都拧好了！'), 300);
+            }
+        }
+    </script>
+</body>
+</html>
