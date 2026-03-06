@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📦 几何立体组 - 蒙氏教育</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: linear-gradient(135deg, #f3e5f5, #e1bee7); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            padding: 20px;
+        }
+        h1 { color: #7b1fa2; margin-bottom: 10px; }
+        #shapes {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 15px 0;
+        }
+        .shape {
+            width: 70px;
+            height: 70px;
+            background: #fff;
+            border: 3px solid #7b1fa2;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 35px;
+        }
+        .shape:hover { transform: scale(1.1); box-shadow: 0 5px 15px rgba(123, 31, 162, 0.3); }
+        .shape .label { font-size: 11px; color: #666; margin-top: 3px; }
+        
+        #silhouettes {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 15px;
+        }
+        .silhouette {
+            width: 70px;
+            height: 70px;
+            background: #7b1fa2;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            opacity: 0.7;
+        }
+        .silhouette .shape-icon {
+            font-size: 35px;
+            filter: brightness(0) invert(1);
+            opacity: 0.5;
+        }
+        .silhouette .label { font-size: 11px; color: #fff; margin-top: 3px; opacity: 0.7; }
+        
+        #score { margin-top: 15px; font-size: 1.3rem; color: #7b1fa2; }
+        #message { margin-top: 10px; color: #666; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>📦 几何立体组</h1>
+    <p>把立体图形和阴影配对</p>
+    
+    <div id="shapes"></div>
+    
+    <div id="silhouettes"></div>
+    
+    <div id="score">配对成功: 0/4</div>
+    <div id="message">点击图形，然后点击匹配的阴影</div>
+    
+    <script>
+        const shapesData = [
+            { id: 'cube', emoji: '📦', name: '正方体' },
+            { id: 'sphere', emoji: '⚽', name: '球体' },
+            { id: 'cylinder', emoji: '🥫', name: '圆柱体' },
+            { id: 'cone', emoji: '🍦', name: '圆锥体' }
+        ];
+        
+        // 打乱
+        const shuffled = [...shapesData].sort(() => Math.random() - 0.5);
+        
+        const shapesContainer = document.getElementById('shapes');
+        const silhouettesContainer = document.getElementById('silhouettes');
+        
+        // 创建可选择的几何体
+        shapesData.forEach(shape => {
+            const el = document.createElement('div');
+            el.className = 'shape';
+            el.dataset.id = shape.id;
+            el.innerHTML = `<div>${shape.emoji}</div><div class="label">${shape.name}</div>`;
+            el.onclick = () => selectShape(shape.id);
+            shapesContainer.appendChild(el);
+        });
+        
+        // 创建阴影
+        shuffled.forEach(shape => {
+            const el = document.createElement('div');
+            el.className = 'silhouette';
+            el.dataset.id = shape.id;
+            el.innerHTML = `<div class="shape-icon">${shape.emoji}</div><div class="label">${shape.name}</div>`;
+            el.onclick = () => matchShape(shape.id);
+            silhouettesContainer.appendChild(el);
+        });
+        
+        let selectedShape = null;
+        let matched = 0;
+        
+        function selectShape(id) {
+            selectedShape = id;
+            document.querySelectorAll('.shape').forEach(s => s.style.borderColor = '#7b1fa2');
+            document.querySelector(`.shape[data-id="${id}"]`).style.borderColor = '#4caf50';
+            document.getElementById('message').textContent = '你选择了: ' + shapesData.find(s => s.id === id).name;
+        }
+        
+        function matchShape(id) {
+            if (!selectedShape) {
+                document.getElementById('message').textContent = '请先选择一个几何体！';
+                return;
+            }
+            
+            const silhouette = document.querySelector(`.silhouette[data-id="${id}"]`);
+            
+            if (selectedShape === id) {
+                silhouette.style.background = '#4caf50';
+                silhouette.querySelector('.shape-icon').style.opacity = '1';
+                silhouette.querySelector('.label').style.opacity = '1';
+                matched++;
+                document.getElementById('score').textContent = '配对成功: ' + matched + '/4';
+                document.getElementById('message').textContent = '🎉 配对成功！';
+                
+                if (matched >= 4) {
+                    setTimeout(() => alert('🎉 太棒了！所有图形都配对成功！'), 300);
+                }
+                
+                selectedShape = null;
+            } else {
+                silhouette.style.animation = 'shake 0.3s';
+                setTimeout(() => silhouette.style.animation = '', 300);
+                document.getElementById('message').textContent = '😕 不对，再试试！';
+            }
+        }
+        
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-5px); }
+                75% { transform: translateX(5px); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
