@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🖼️ 看图说词 - 蒙氏教育</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: linear-gradient(135deg, #e1f5fe, #b3e5fc); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            padding: 20px;
+        }
+        h1 { color: #0277bd; margin-bottom: 10px; }
+        
+        #image-display {
+            width: min(80vw, 280px);
+            height: min(80vw, 280px);
+            background: #fff;
+            border: 4px solid #0277bd;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 120px;
+            margin: 15px 0;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        #image-display:hover { transform: scale(1.02); }
+        
+        #hint {
+            font-size: 18px;
+            color: #0277bd;
+            margin-bottom: 15px;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 20px;
+        }
+        
+        #answer-input {
+            padding: 12px 20px;
+            font-size: 18px;
+            border: 3px solid #0277bd;
+            border-radius: 25px;
+            width: min(80vw, 250px);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        #submit-btn {
+            padding: 12px 30px;
+            background: #0277bd;
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        #submit-btn:hover { background: #01579b; }
+        
+        #skip-btn {
+            padding: 10px 20px;
+            background: transparent;
+            color: #666;
+            border: 2px solid #666;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        #score { margin-top: 15px; font-size: 1.3rem; color: #0277bd; }
+        #message { margin-top: 10px; color: #666; text-align: center; min-height: 24px; }
+    </style>
+</head>
+<body>
+    <h1>🖼️ 看图说词</h1>
+    <p>看图说出正确的词语</p>
+    
+    <div id="image-display" onclick="nextImage()">🍎</div>
+    
+    <div id="hint">这是什么东西？</div>
+    
+    <input type="text" id="answer-input" placeholder="输入答案" maxlength="10">
+    <br>
+    <button id="submit-btn" onclick="checkAnswer()">✅ 确认</button>
+    <button id="skip-btn" onclick="skipAnswer()">跳过 →</button>
+    
+    <div id="score">答对: 0</div>
+    <div id="message">看图说词</div>
+    
+    <script>
+        const images = [
+            { emoji: '🍎', answers: ['苹果', 'apple'] },
+            { emoji: '🍌', answers: ['香蕉', 'banana'] },
+            { emoji: '🚌', answers: ['公交车', '汽车', 'bus'] },
+            { emoji: '🐶', answers: ['小狗', '狗', 'dog'] },
+            { emoji: '🐱', answers: ['小猫', '猫', 'cat'] },
+            { emoji: '🌸', answers: ['花', '花朵', 'flower'] },
+            { emoji: '🌳', answers: ['树', '大树', 'tree'] },
+            { emoji: '☀️', answers: ['太阳', 'sun'] },
+            { emoji: '🌙', answers: ['月亮', 'moon'] },
+            { emoji: '⭐', answers: ['星星', 'star'] },
+            { emoji: '🏠', answers: ['房子', '家', 'house'] },
+            { emoji: '📚', answers: ['书', 'books', 'book'] }
+        ];
+        
+        let currentIndex = 0;
+        let score = 0;
+        
+        function showImage() {
+            const img = images[currentIndex];
+            document.getElementById('image-display').textContent = img.emoji;
+            document.getElementById('answer-input').value = '';
+            document.getElementById('message').textContent = '看图说词';
+        }
+        
+        function checkAnswer() {
+            const input = document.getElementById('answer-input').value.trim();
+            const correct = images[currentIndex].answers;
+            
+            if (correct.includes(input)) {
+                score++;
+                document.getElementById('score').textContent = '答对: ' + score;
+                document.getElementById('message').textContent = '🎉 答对了！';
+                document.getElementById('message').style.color = '#4caf50';
+                
+                setTimeout(() => {
+                    currentIndex = (currentIndex + 1) % images.length;
+                    showImage();
+                    document.getElementById('message').style.color = '#666';
+                }, 800);
+            } else {
+                document.getElementById('message').textContent = '😕 不对，答案是: ' + correct[0];
+                document.getElementById('message').style.color = '#f44336';
+                
+                setTimeout(() => {
+                    currentIndex = (currentIndex + 1) % images.length;
+                    showImage();
+                    document.getElementById('message').style.color = '#666';
+                }, 1500);
+            }
+        }
+        
+        function skipAnswer() {
+            const correct = images[currentIndex].answers;
+            document.getElementById('message').textContent = '答案是: ' + correct[0];
+            
+            setTimeout(() => {
+                currentIndex = (currentIndex + 1) % images.length;
+                showImage();
+            }, 1000);
+        }
+        
+        function nextImage() {
+            currentIndex = (currentIndex + 1) % images.length;
+            showImage();
+        }
+        
+        // 回车提交
+        document.getElementById('answer-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkAnswer();
+        });
+        
+        showImage();
+    </script>
+</body>
+</html>
