@@ -19,20 +19,21 @@
         #floor {
             width: min(90vw, 400px);
             height: min(70vw, 350px);
-            background: #d7ccc8;
+            background: #efebe9;
             border-radius: 10px;
             position: relative;
             overflow: hidden;
-            border: 4px solid #a1887f;
+            border: 4px solid #8d6e63;
         }
         .dust {
-            width: 25px;
-            height: 25px;
+            width: 30px;
+            height: 30px;
             position: absolute;
-            font-size: 20px;
+            font-size: 22px;
             cursor: pointer;
             transition: transform 0.1s;
             user-select: none;
+            filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));
         }
         .dust:hover { transform: scale(1.2); }
         #broom {
@@ -87,7 +88,7 @@
     
     <script>
         const floor = document.getElementById('floor');
-        const dustTypes = ['🌫️', '💨', '🍘', '🟤', '⚫'];
+        const dustTypes = ['🌫️', '🍂', '🟤', '⚫', '🟥'];
         let dusts = [];
         let collected = 0;
         const totalDust = 10;
