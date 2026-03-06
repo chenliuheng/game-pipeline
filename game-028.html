@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔤 字母配对 - 蒙氏教育</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            padding: 20px;
+        }
+        h1 { color: #2e7d32; margin-bottom: 10px; }
+        
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+            max-width: 350px;
+        }
+        .card {
+            width: 70px;
+            height: 70px;
+            background: #fff;
+            border: 3px solid #2e7d32;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            cursor: pointer;
+            transition: all 0.3s;
+            user-select: none;
+        }
+        .card:hover { transform: scale(1.05); }
+        .card.flipped { background: #c8e6c9; }
+        .card.matched { 
+            background: #4caf50; 
+            border-color: #4caf50;
+            color: white;
+            cursor: default;
+        }
+        .card.hidden { visibility: hidden; }
+        
+        #score { margin-top: 15px; font-size: 1.3rem; color: #2e7d32; }
+        #message { margin-top: 10px; color: #666; }
+        #restart-btn {
+            margin-top: 15px;
+            padding: 10px 25px;
+            background: #2e7d32;
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #restart-btn:hover { background: #1b5e20; }
+    </style>
+</head>
+<body>
+    <h1>🔤 字母配对游戏</h1>
+    <p>找出相同字母的位置</p>
+    
+    <div class="card-grid" id="grid"></div>
+    
+    <div id="score">配对成功: 0/8</div>
+    <div id="message">点击两张卡片进行配对</div>
+    <button id="restart-btn" onclick="initGame()">🔄 重新开始</button>
+    
+    <script>
+        const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        
+        function initGame() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            cards = [];
+            flippedCards = [];
+            matchedPairs = 0;
+            
+            // 创建配对
+            const pairs = [...letters, ...letters];
+            // 打乱
+            pairs.sort(() => Math.random() - 0.5);
+            
+            pairs.forEach((letter, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.dataset.letter = letter;
+                card.dataset.index = index;
+                card.textContent = '?';
+                card.onclick = () => flipCard(card);
+                grid.appendChild(card);
+                cards.push(card);
+            });
+            
+            document.getElementById('score').textContent = '配对成功: 0/8';
+            document.getElementById('message').textContent = '点击两张卡片进行配对';
+        }
+        
+        function flipCard(card) {
+            if (flippedCards.length >= 2) return;
+            if (card.classList.contains('flipped')) return;
+            if (card.classList.contains('matched')) return;
+            
+            // 翻开卡片
+            card.classList.add('flipped');
+            card.textContent = card.dataset.letter;
+            flippedCards.push(card);
+            
+            if (flippedCards.length === 2) {
+                checkMatch();
+            }
+        }
+        
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            
+            if (card1.dataset.letter === card2.dataset.letter) {
+                // 配对成功
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                matchedPairs++;
+                
+                document.getElementById('score').textContent = '配对成功: ' + matchedPairs + '/8';
+                document.getElementById('message').textContent = '🎉 配对成功！';
+                
+                if (matchedPairs >= 8) {
+                    document.getElementById('message').textContent = '🎉 太棒了！所有字母都配对成功！';
+                }
+            } else {
+                // 配对失败
+                document.getElementById('message').textContent = '不对，再试试';
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card1.textContent = '?';
+                    card2.classList.remove('flipped');
+                    card2.textContent = '?';
+                }, 800);
+            }
+            
+            flippedCards = [];
+        }
+        
+        initGame();
+    </script>
+</body>
+</html>
