@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📿 穿珠子 - 蒙氏教育</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #fce4ec, #f8bbd9);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      padding: 20px;
+    }
+    h1 { color: #c2185b; margin-bottom: 10px; }
+    #instructions { color: #666; margin-bottom: 20px; }
+    
+    .beads-container {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    
+    .bead {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.2s;
+      border: 3px solid rgba(0,0,0,0.2);
+    }
+    .bead:hover { transform: scale(1.2); }
+    .bead.selected { transform: scale(1.3); border-color: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.3); }
+    
+    .bead.red { background: linear-gradient(135deg, #ef5350, #c62828); }
+    .bead.blue { background: linear-gradient(135deg, #42a5f5, #1565c0); }
+    .bead.yellow { background: linear-gradient(135deg, #ffee58, #f9a825); }
+    .bead.green { background: linear-gradient(135deg, #66bb6a, #2e7d32); }
+    
+    .string {
+      width: 10px;
+      height: 200px;
+      background: #8d6e63;
+      border-radius: 5px;
+      margin: 20px auto;
+      position: relative;
+    }
+    
+    .threaded {
+      position: absolute;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 3px solid rgba(0,0,0,0.2);
+    }
+    
+    button {
+      padding: 15px 30px;
+      background: #c2185b;
+      color: #fff;
+      border: none;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    
+    #score { margin-top: 20px; font-size: 20px; color: #c2185b; }
+  </style>
+</head>
+<body>
+  <h1>📿 穿珠子</h1>
+  <p id="instructions">按红-蓝-黄-绿顺序穿珠子</p>
+  
+  <div class="beads-container">
+    <div class="bead red" data-color="red" onclick="selectBead(this)"></div>
+    <div class="bead blue" data-color="blue" onclick="selectBead(this)"></div>
+    <div class="bead yellow" data-color="yellow" onclick="selectBead(this)"></div>
+    <div class="bead green" data-color="green" onclick="selectBead(this)"></div>
+  </div>
+  
+  <div class="string" id="string"></div>
+  
+  <div id="score">已穿: 0 / 8</div>
+  <button onclick="resetGame()">🔄 重新开始</button>
+
+  <script>
+    const pattern = ['red', 'blue', 'yellow', 'green', 'red', 'blue', 'yellow', 'green'];
+    let selected = null;
+    let threaded = 0;
+    
+    function selectBead(el) {
+      document.querySelectorAll('.bead').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      selected = el.dataset.color;
+    }
+    
+    function addToString() {
+      if (!selected) return;
+      if (threaded >= 8) return;
+      
+      if (selected === pattern[threaded]) {
+        const bead = document.createElement('div');
+        bead.className = 'threaded bead ' + selected;
+        bead.style.top = (threaded * 20) + 'px';
+        document.getElementById('string').appendChild(bead);
+        threaded++;
+        document.getElementById('score').textContent = '已穿: ' + threaded + ' / 8';
+        
+        if (threaded >= 8) {
+          document.getElementById('score').textContent = '🎉 太棒了！完美完成！';
+        }
+      } else {
+        alert('颜色顺序错了！提示：红-蓝-黄-绿');
+      }
+    }
+    
+    document.getElementById('string').onclick = addToString;
+    
+    function resetGame() {
+      threaded = 0;
+      selected = null;
+      document.getElementById('string').innerHTML = '';
+      document.querySelectorAll('.bead').forEach(b => b.classList.remove('selected'));
+      document.getElementById('score').textContent = '已穿: 0 / 8';
+    }
+  </script>
+</body>
+</html>

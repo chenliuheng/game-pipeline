@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🥄 勺子传递 - 蒙氏教育</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      padding: 20px;
+    }
+    h1 { color: #e65100; margin-bottom: 10px; }
+    #instructions { color: #666; margin-bottom: 20px; }
+    
+    .game-area {
+      display: flex;
+      gap: 60px;
+      margin: 30px 0;
+      align-items: flex-end;
+    }
+    
+    .bowl {
+      width: 120px;
+      height: 60px;
+      background: linear-gradient(135deg, #8d6e63, #5d4037);
+      border-radius: 0 0 60px 60px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .ball {
+      width: 25px;
+      height: 25px;
+      background: linear-gradient(135deg, #ff5722, #e64a19);
+      border-radius: 50%;
+      position: absolute;
+      top: -30px;
+      transition: all 0.5s;
+    }
+    
+    .bowl.start .ball { left: 20px; }
+    .bowl.end .ball { right: 20px; }
+    .bowl.middle .ball { left: 50%; transform: translateX(-50%); top: -25px; }
+    
+    .spoon {
+      font-size: 48px;
+      cursor: pointer;
+      transition: transform 0.3s;
+      user-select: none;
+    }
+    .spoon:hover { transform: scale(1.2) rotate(-20deg); }
+    
+    button {
+      padding: 15px 30px;
+      background: #e65100;
+      color: #fff;
+      border: none;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    
+    #score {
+      margin-top: 20px;
+      font-size: 24px;
+      color: #e65100;
+    }
+  </style>
+</head>
+<body>
+  <h1>🥄 勺子传递</h1>
+  <p id="instructions">用勺子把小球从一个碗传到另一个碗</p>
+  
+  <div class="game-area">
+    <div class="bowl start" id="bowl1"><div class="ball"></div></div>
+    <div class="bowl middle" id="bowl2"><div class="ball"></div></div>
+    <div class="bowl end" id="bowl3"><div class="ball"></div></div>
+  </div>
+  
+  <div class="spoon" onclick="moveBall()">🥄</div>
+  
+  <div id="score">进度: 0 / 2</div>
+  <button onclick="resetGame()">🔄 重新开始</button>
+
+  <script>
+    let currentBowl = 1;
+    let moves = 0;
+    
+    function moveBall() {
+      if (currentBowl < 3) {
+        currentBowl++;
+        moves++;
+        updateDisplay();
+      } else {
+        document.getElementById('score').textContent = '🎉 完成！用了 ' + moves + ' 次';
+      }
+    }
+    
+    function updateDisplay() {
+      document.querySelectorAll('.ball').forEach(b => b.style.display = 'none');
+      const bowl = document.getElementById('bowl' + currentBowl);
+      bowl.querySelector('.ball').style.display = 'block';
+      document.getElementById('score').textContent = '进度: ' + (currentBowl - 1) + ' / 2';
+    }
+    
+    function resetGame() {
+      currentBowl = 1;
+      moves = 0;
+      document.querySelectorAll('.ball').forEach(b => b.style.display = 'none');
+      document.getElementById('bowl1').querySelector('.ball').style.display = 'block';
+      document.getElementById('score').textContent = '进度: 0 / 2';
+    }
+    
+    resetGame();
+  </script>
+</body>
+</html>

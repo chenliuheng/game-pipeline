@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔢 数字认知 - 蒙氏教育</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #e8eaf6, #c5cae9);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      padding: 20px;
+    }
+    h1 { color: #303f9f; margin-bottom: 10px; }
+    #instructions { color: #666; margin-bottom: 20px; }
+    
+    .number-display {
+      font-size: 120px;
+      font-weight: bold;
+      color: #303f9f;
+      margin: 20px 0;
+    }
+    
+    .dots {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .dot {
+      width: 30px;
+      height: 30px;
+      background: #3f51b5;
+      border-radius: 50%;
+    }
+    
+    .numbers-row {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .number-btn {
+      width: 50px;
+      height: 50px;
+      background: #fff;
+      border: 3px solid #303f9f;
+      border-radius: 10px;
+      font-size: 24px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .number-btn:hover { background: #e8eaf6; transform: scale(1.1); }
+    .number-btn.correct { background: #c8e6c9; border-color: #4caf50; }
+    .number-btn.wrong { background: #ffcdd2; border-color: #f44336; }
+    
+    button {
+      padding: 15px 30px;
+      background: #303f9f;
+      color: #fff;
+      border: none;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    
+    #message { margin-top: 20px; font-size: 20px; color: #303f9f; }
+  </style>
+</head>
+<body>
+  <h1>🔢 数字认知</h1>
+  <p id="instructions">数一数有多少个点，点击正确的数字</p>
+  
+  <div class="number-display" id="display">1</div>
+  
+  <div class="dots" id="dots"></div>
+  
+  <div class="numbers-row" id="numbers"></div>
+  
+  <div id="message"></div>
+  <button onclick="initGame()">🔄 下一题</button>
+
+  <script>
+    let currentNumber = 1;
+    
+    function initGame() {
+      currentNumber = Math.floor(Math.random() * 9) + 1;
+      
+      document.getElementById('display').textContent = currentNumber;
+      
+      // 生成对应数量的点
+      const dotsContainer = document.getElementById('dots');
+      dotsContainer.innerHTML = '';
+      for (let i = 0; i < currentNumber; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'dot';
+        dotsContainer.appendChild(dot);
+      }
+      
+      // 生成数字选项（打乱顺序）
+      const numbers = [1,2,3,4,5,6,7,8,9];
+      const shuffled = [...numbers].sort(() => Math.random() - 0.5);
+      
+      const numbersContainer = document.getElementById('numbers');
+      numbersContainer.innerHTML = '';
+      shuffled.forEach(num => {
+        const btn = document.createElement('div');
+        btn.className = 'number-btn';
+        btn.textContent = num;
+        btn.onclick = () => checkAnswer(num, btn);
+        numbersContainer.appendChild(btn);
+      });
+      
+      document.getElementById('message').textContent = '';
+    }
+    
+    function checkAnswer(num, btn) {
+      if (num === currentNumber) {
+        btn.classList.add('correct');
+        document.getElementById('message').textContent = '🎉 正确！';
+        setTimeout(initGame, 1500);
+      } else {
+        btn.classList.add('wrong');
+        setTimeout(() => btn.classList.remove('wrong'), 500);
+      }
+    }
+    
+    initGame();
+  </script>
+</body>
+</html>

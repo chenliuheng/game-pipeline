@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🫗 倒水游戏 - 蒙氏教育</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      padding: 20px;
+      user-select: none;
+    }
+    h1 { color: #1565c0; margin-bottom: 10px; }
+    #instructions { color: #666; margin-bottom: 20px; text-align: center; }
+    
+    .container {
+      display: flex;
+      gap: 40px;
+      align-items: flex-end;
+      margin: 30px 0;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .glass {
+      width: 80px;
+      height: 120px;
+      border: 4px solid #1565c0;
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+      position: relative;
+      background: rgba(255,255,255,0.3);
+      overflow: hidden;
+    }
+    
+    .water {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, #42a5f5, #90caf9);
+      transition: height 0.5s;
+    }
+    
+    .glass-label {
+      text-align: center;
+      margin-top: 10px;
+      color: #1565c0;
+      font-weight: bold;
+    }
+    
+    .pitcher {
+      width: 100px;
+      height: 140px;
+      background: linear-gradient(135deg, #78909c, #546e7a);
+      border-radius: 10px 10px 30px 30px;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .pitcher:active { transform: scale(0.95); }
+    
+    .pitcher::before {
+      content: '';
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 30px;
+      height: 30px;
+      background: #546e7a;
+      border-radius: 5px;
+    }
+    
+    .pitcher-water {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      right: 10px;
+      height: 70%;
+      background: linear-gradient(to top, #42a5f5, #90caf9);
+      border-radius: 0 0 20px 20px;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+    }
+    
+    button {
+      padding: 15px 30px;
+      background: #1565c0;
+      color: #fff;
+      border: none;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    button:hover { background: #0d47a1; transform: scale(1.05); }
+    
+    #message {
+      margin-top: 20px;
+      font-size: 24px;
+      color: #2e7d32;
+      font-weight: bold;
+      min-height: 36px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🫗 倒水游戏</h1>
+  <p id="instructions">点击水壶倒水，把水倒到目标刻度</p>
+  
+  <div class="container">
+    <div>
+      <div class="pitcher" onclick="pourWater()">
+        <div class="pitcher-water" id="pitcher-water"></div>
+      </div>
+      <div class="glass-label">水壶</div>
+    </div>
+    
+    <div>
+      <div class="glass">
+        <div class="water" id="glass1-water" style="height: 0%"></div>
+      </div>
+      <div class="glass-label">目标: 80%</div>
+    </div>
+    
+    <div>
+      <div class="glass">
+        <div class="water" id="glass2-water" style="height: 0%"></div>
+      </div>
+      <div class="glass-label">目标: 50%</div>
+    </div>
+  </div>
+  
+  <div class="controls">
+    <button onclick="resetGame()">🔄 重新开始</button>
+  </div>
+  
+  <div id="message"></div>
+
+  <script>
+    let glass1Level = 0;
+    let glass2Level = 0;
+    let pitcherLevel = 100;
+    const target1 = 80;
+    const target2 = 50;
+    
+    function pourWater() {
+      if (pitcherLevel <= 0) {
+        document.getElementById('message').textContent = '水壶空了！';
+        return;
+      }
+      
+      // 随机选择一个杯子倒水
+      if (Math.random() > 0.5 && glass1Level < 100) {
+        glass1Level = Math.min(100, glass1Level + 20);
+        document.getElementById('glass1-water').style.height = glass1Level + '%';
+      } else if (glass2Level < 100) {
+        glass2Level = Math.min(100, glass2Level + 20);
+        document.getElementById('glass2-water').style.height = glass2Level + '%';
+      }
+      
+      pitcherLevel = Math.max(0, pitcherLevel - 20);
+      document.getElementById('pitcher-water').style.height = pitcherLevel + '%';
+      
+      checkWin();
+    }
+    
+    function checkWin() {
+      const diff1 = Math.abs(glass1Level - target1);
+      const diff2 = Math.abs(glass2Level - target2);
+      
+      if (diff1 <= 5 && diff2 <= 5) {
+        document.getElementById('message').textContent = '🎉 太棒了！水平完美！';
+      } else if (diff1 <= 10 || diff2 <= 10) {
+        document.getElementById('message').textContent = '👏 很接近了！';
+      } else {
+        document.getElementById('message').textContent = '';
+      }
+    }
+    
+    function resetGame() {
+      glass1Level = 0;
+      glass2Level = 0;
+      pitcherLevel = 100;
+      document.getElementById('glass1-water').style.height = '0%';
+      document.getElementById('glass2-water').style.height = '0%';
+      document.getElementById('pitcher-water').style.height = '100%';
+      document.getElementById('message').textContent = '';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📏 大小排序 - 蒙氏教育</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #fff8e1, #ffecb3);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      padding: 20px;
+    }
+    h1 { color: #f57f17; margin-bottom: 10px; }
+    #instructions { color: #666; margin-bottom: 20px; }
+    
+    .items {
+      display: flex;
+      gap: 15px;
+      margin: 30px 0;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .item {
+      background: linear-gradient(135deg, #ffb74d, #f57c00);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: #fff;
+      font-weight: bold;
+    }
+    .item:hover { transform: scale(1.1); }
+    
+    .target-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 30px;
+      background: rgba(255,255,255,0.5);
+      padding: 20px;
+      border-radius: 15px;
+    }
+    
+    .target {
+      width: 60px;
+      height: 60px;
+      border: 3px dashed #f57f17;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    
+    button {
+      padding: 15px 30px;
+      background: #f57f17;
+      color: #fff;
+      border: none;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    
+    #message { margin-top: 20px; font-size: 20px; color: #f57f17; }
+  </style>
+</head>
+<body>
+  <h1>📏 大小排序</h1>
+  <p id="instructions">按从小到大的顺序点击方块</p>
+  
+  <div class="items" id="items"></div>
+  
+  <div class="target-row" id="targets">
+    <div class="target">1</div>
+    <div class="target">2</div>
+    <div class="target">3</div>
+    <div class="target">4</div>
+  </div>
+  
+  <div id="message">进度: 0/4</div>
+  <button onclick="initGame()">🔄 重新开始</button>
+
+  <script>
+    let currentIndex = 1;
+    let placed = [];
+    
+    function initGame() {
+      currentIndex = 1;
+      placed = [];
+      
+      const items = [1, 2, 3, 4];
+      const shuffled = [...items].sort(() => Math.random() - 0.5);
+      
+      const container = document.getElementById('items');
+      container.innerHTML = '';
+      
+      shuffled.forEach(num => {
+        const item = document.createElement('div');
+        item.className = 'item';
+        item.style.width = (40 + num * 20) + 'px';
+        item.style.height = (40 + num * 20) + 'px';
+        item.textContent = num;
+        item.dataset.size = num;
+        item.onclick = () => clickItem(num, item);
+        container.appendChild(item);
+      });
+      
+      document.querySelectorAll('.target').forEach(t => {
+        t.textContent = t.textContent;
+        t.style.background = 'rgba(255,255,255,0.5)';
+      });
+      
+      document.getElementById('message').textContent = '进度: 0/4';
+    }
+    
+    function clickItem(num, item) {
+      if (placed.includes(num)) return;
+      
+      if (num === currentIndex) {
+        placed.push(num);
+        item.style.opacity = '0.3';
+        item.style.pointerEvents = 'none';
+        
+        const targets = document.querySelectorAll('.target');
+        targets[num-1].style.background = '#c8e6c9';
+        targets[num-1].textContent = '✅';
+        
+        document.getElementById('message').textContent = '进度: ' + placed.length + '/4';
+        
+        if (placed.length >= 4) {
+          document.getElementById('message').textContent = '🎉 太棒了！完成排序！';
+        }
+        
+        currentIndex++;
+      }
+    }
+    
+    initGame();
+  </script>
+</body>
+</html>

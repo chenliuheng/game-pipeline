@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>✋ 触摸配对 - 蒙氏教育</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #fbe9e7, #ffccbc);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      padding: 20px;
+    }
+    h1 { color: #bf360c; margin-bottom: 10px; }
+    #instructions { color: #666; margin-bottom: 20px; text-align: center; }
+    
+    .textures {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin: 20px 0;
+    }
+    
+    .texture-card {
+      width: 140px;
+      height: 140px;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      border: 4px solid transparent;
+    }
+    .texture-card:hover { transform: scale(1.05); }
+    .texture-card.selected { border-color: #fff; }
+    .texture-card.matched { opacity: 0.5; pointer-events: none; }
+    
+    .texture-card.smooth { background: linear-gradient(135deg, #fff9c4, #fff59d); }
+    .texture-card.rough { background: #8d6e63; }
+    .texture-card.bumpy { background: repeating-radial-gradient(circle, #ffab91, #ffab91 5px, #ff8a65 5px, #ff8a65 10px); }
+    .texture-card.soft { background: linear-gradient(135deg, #ce93d8, #ba68c8); }
+    
+    .eyes {
+      display: flex;
+      gap: 20px;
+      margin-top: 30px;
+    }
+    
+    .eye {
+      width: 80px;
+      height: 80px;
+      background: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      cursor: pointer;
+      border: 3px dashed #bf360c;
+    }
+    
+    button {
+      padding: 15px 30px;
+      background: #bf360c;
+      color: #fff;
+      border: none;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    
+    #message { margin-top: 20px; font-size: 20px; color: #bf360c; }
+  </style>
+</head>
+<body>
+  <h1>✋ 触摸配对</h1>
+  <p id="instructions">闭上眼睛，触摸不同材质的卡片，找到匹配的</p>
+  
+  <div class="textures" id="textures">
+    <div class="texture-card smooth" data-type="smooth" onclick="selectCard(this)">
+      <span>🟡</span>
+      <span style="font-size:14px;margin-top:5px">光滑</span>
+    </div>
+    <div class="texture-card rough" data-type="rough" onclick="selectCard(this)">
+      <span>🟤</span>
+      <span style="font-size:14px;margin-top:5px">粗糙</span>
+    </div>
+    <div class="texture-card bumpy" data-type="bumpy" onclick="selectCard(this)">
+      <span>🔴</span>
+      <span style="font-size:14px;margin-top:5px">凹凸</span>
+    </div>
+    <div class="texture-card soft" data-type="soft" onclick="selectCard(this)">
+      <span>🟣</span>
+      <span style="font-size:14px;margin-top:5px">柔软</span>
+    </div>
+  </div>
+  
+  <div class="eyes">
+    <div class="eye" onclick="checkMatch()">👁️</div>
+    <div class="eye" onclick="checkMatch()">👁️</div>
+  </div>
+  
+  <div id="message">选择一个材质，闭上眼睛摸另一张</div>
+  <button onclick="initGame()">🔄 重新开始</button>
+
+  <script>
+    let selectedCard = null;
+    let matched = 0;
+    
+    function selectCard(el) {
+      if (el.classList.contains('matched')) return;
+      
+      if (!selectedCard) {
+        selectedCard = el;
+        el.classList.add('selected');
+        document.getElementById('message').textContent = '好，现在闭眼摸另一张！';
+      } else {
+        if (el === selectedCard) return;
+        
+        if (el.dataset.type === selectedCard.dataset.type) {
+          el.classList.add('matched');
+          selectedCard.classList.add('matched');
+          selectedCard.classList.remove('selected');
+          matched++;
+          document.getElementById('message').textContent = '🎉 配对成功！';
+          selectedCard = null;
+          
+          if (matched >= 2) {
+            document.getElementById('message').textContent = '🎉 太棒了！全部配对成功！';
+          }
+        } else {
+          document.getElementById('message').textContent = '不一样！再试一次';
+          setTimeout(() => {
+            selectedCard.classList.remove('selected');
+            selectedCard = null;
+          }, 500);
+        }
+      }
+    }
+    
+    function checkMatch() {
+      if (selectedCard) {
+        document.getElementById('message').textContent = '请先选择两张卡片配对';
+      }
+    }
+    
+    function initGame() {
+      matched = 0;
+      selectedCard = null;
+      document.querySelectorAll('.texture-card').forEach(c => {
+        c.classList.remove('matched', 'selected');
+      });
+      document.getElementById('message').textContent = '选择一个材质，闭上眼睛摸另一张';
+    }
+  </script>
+</body>
+</html>

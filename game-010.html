@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔘 扣子练习 - 蒙氏教育</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      padding: 20px;
+    }
+    h1 { color: #7b1fa2; margin-bottom: 10px; }
+    #instructions { color: #666; margin-bottom: 20px; }
+    
+    .button-board {
+      background: #fff;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .button-hole {
+      width: 50px;
+      height: 50px;
+      background: #e0e0e0;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 10px;
+    }
+    
+    .button {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #ab47bc, #7b1fa2);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.2s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .button:hover { transform: scale(1.1); }
+    .button.attached { background: linear-gradient(135deg, #4caf50, #2e7d32); }
+    
+    .button-row {
+      display: flex;
+      gap: 15px;
+      margin: 20px 0;
+    }
+    
+    button {
+      padding: 15px 30px;
+      background: #7b1fa2;
+      color: #fff;
+      border: none;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    
+    #score { margin-top: 20px; font-size: 20px; color: #7b1fa2; }
+  </style>
+</head>
+<body>
+  <h1>🔘 扣子练习</h1>
+  <p id="instructions">把扣子放进对应的扣眼里</p>
+  
+  <div class="button-board">
+    <div class="button-row">
+      <div class="button-hole"><div class="button" onclick="attachButton(this)"></div></div>
+      <div class="button-hole"><div class="button" onclick="attachButton(this)"></div></div>
+      <div class="button-hole"><div class="button" onclick="attachButton(this)"></div></div>
+    </div>
+    <div class="button-row">
+      <div class="button-hole"><div class="button" onclick="attachButton(this)"></div></div>
+      <div class="button-hole"><div class="button" onclick="attachButton(this)"></div></div>
+      <div class="button-hole"><div class="button" onclick="attachButton(this)"></div></div>
+    </div>
+  </div>
+  
+  <div id="score">已完成: 0 / 6</div>
+  <button onclick="resetGame()">🔄 重新开始</button>
+
+  <script>
+    let attached = 0;
+    
+    function attachButton(el) {
+      if (el.classList.contains('attached')) return;
+      
+      el.classList.add('attached');
+      attached++;
+      document.getElementById('score').textContent = '已完成: ' + attached + ' / 6';
+      
+      if (attached >= 6) {
+        setTimeout(() => alert('🎉 太棒了！所有扣子都扣好了！'), 300);
+      }
+    }
+    
+    function resetGame() {
+      attached = 0;
+      document.querySelectorAll('.button').forEach(b => b.classList.remove('attached'));
+      document.getElementById('score').textContent = '已完成: 0 / 6';
+    }
+  </script>
+</body>
+</html>
