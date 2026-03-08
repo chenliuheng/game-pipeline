@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧩 字母拼图 - 蒙氏教育</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      padding: 20px;
+    }
+    h1 { color: #2e7d32; margin-bottom: 10px; }
+    #puzzle-container {
+      position: relative;
+      width: min(90vw, 300px);
+      height: min(90vw, 300px);
+      background: #fff;
+      border: 4px solid #2e7d32;
+      border-radius: 15px;
+      margin: 15px 0;
+    }
+    .puzzle-piece {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      background: #fff3e0;
+      border: 2px solid #ff9800;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      cursor: grab;
+      user-select: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .puzzle-piece:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .puzzle-piece.dragging {
+      cursor: grabbing;
+      z-index: 100;
+    }
+    .puzzle-piece.correct {
+      background: #c8e6c9;
+      border-color: #2e7d32;
+    }
+    #target-area {
+      width: min(90vw, 300px);
+      height: min(90vw, 300px);
+      background: #e8f5e9;
+      border: 3px dashed #2e7d32;
+      border-radius: 15px;
+      position: relative;
+      margin: 15px 0;
+    }
+    #target-area .slot {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      border: 2px dashed #2e7d32;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      color: #2e7d32;
+      background: rgba(255,255,255,0.5);
+    }
+    #info {
+      margin: 15px 0;
+      color: #555;
+      text-align: center;
+    }
+    #score {
+      font-size: 24px;
+      color: #2e7d32;
+      font-weight: bold;
+    }
+    button {
+      padding: 12px 24px;
+      background: #2e7d32;
+      color: #fff;
+      border: none;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 10px;
+      transition: all 0.3s;
+    }
+    button:hover {
+      background: #1b5e20;
+      transform: scale(1.05);
+    }
+    #letter-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 15px;
+    }
+    .letter-btn {
+      width: 40px;
+      height: 40px;
+      background: #fff;
+      border: 2px solid #2e7d32;
+      border-radius: 8px;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .letter-btn:hover {
+      background: #e8f5e9;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧩 字母拼图</h1>
+  <p>将字母块拖到正确位置</p>
+  <div id="puzzle-container"></div>
+  <div id="target-area">
+    <div class="slot" style="left:100px;top:100px;">?</div>
+  </div>
+  <div id="info">
+    <div id="score">正确: 0 / 0</div>
+  </div>
+  <div id="letter-selector"></div>
+  <button onclick="initGame()">🔄 重新开始</button>
+  
+  <script>
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    let currentLetter = 'A';
+    let correctCount = 0;
+    let totalAttempts = 0;
+    let draggedPiece = null;
+    let offsetX, offsetY;
+    
+    const container = document.getElementById('puzzle-container');
+    const targetArea = document.getElementById('target-area');
+    const scoreDisplay = document.getElementById('score');
+    const letterSelector = document.getElementById('letter-selector');
+    
+    function initGame() {
+      // 选择字母
+      const shuffled = [...letters].sort(() => Math.random() - 0.5);
+      currentLetter = shuffled[0];
+      correctCount = 0;
+      totalAttempts = 0;
+      
+      // 创建字母按钮
+      letterSelector.innerHTML = '';
+      letters.forEach(letter => {
+        const btn = document.createElement('div');
+        btn.className = 'letter-btn';
+        btn.textContent = letter;
+        btn.onclick = () => selectLetter(letter);
+        letterSelector.appendChild(btn);
+      });
+      
+      // 创建拼图块
+      container.innerHTML = '';
+      const positions = [
+        {x:0,y:0}, {x:100,y:0}, {x:200,y:0},
+        {x:0,y:100}, {x:100,y:100}, {x:200,y:100},
+        {x:0,y:200}, {x:100,y:200}, {x:200,y:200}
+      ];
+      
+      // 创建一个 3x3 的字母拼图（每个小块显示字母的一部分）
+      const letterParts = currentLetter.split('');
+      
+      positions.forEach((pos, i) => {
+        const piece = document.createElement('div');
+        piece.className = 'puzzle-piece';
+        piece.textContent = currentLetter;
+        piece.style.left = pos.x + 'px';
+        piece.style.top = pos.y + 'px';
+        piece.dataset.letter = currentLetter;
+        piece.dataset.index = i;
+        
+        // 随机打乱位置
+        const randomPos = positions[Math.floor(Math.random() * positions.length)];
+        piece.style.left = randomPos.x + 'px';
+        piece.style.top = randomPos.y + 'px';
+        
+        piece.addEventListener('mousedown', startDrag);
+        piece.addEventListener('touchstart', startDrag, {passive: false});
+        
+        container.appendChild(piece);
+      });
+      
+      updateScore();
+    }
+    
+    function selectLetter(letter) {
+      currentLetter = letter;
+      document.querySelectorAll('.letter-btn').forEach(btn => {
+        btn.style.background = btn.textContent === letter ? '#2e7d32' : '#fff';
+        btn.style.color = btn.textContent === letter ? '#fff' : '#2e7d32';
+      });
+      initGame();
+    }
+    
+    function startDrag(e) {
+      e.preventDefault();
+      draggedPiece = e.target;
+      draggedPiece.classList.add('dragging');
+      
+      const rect = draggedPiece.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      
+      offsetX = clientX - rect.left;
+      offsetY = clientY - rect.top;
+      
+      document.addEventListener('mousemove', drag);
+      document.addEventListener('mouseup', stopDrag);
+      document.addEventListener('touchmove', drag, {passive: false});
+      document.addEventListener('touchend', stopDrag);
+    }
+    
+    function drag(e) {
+      if (!draggedPiece) return;
+      e.preventDefault();
+      
+      const containerRect = container.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      
+      let x = clientX - containerRect.left - offsetX;
+      let y = clientY - containerRect.top - offsetY;
+      
+      x = Math.max(0, Math.min(200, x));
+      y = Math.max(0, Math.min(200, y));
+      
+      draggedPiece.style.left = x + 'px';
+      draggedPiece.style.top = y + 'px';
+    }
+    
+    function stopDrag() {
+      if (!draggedPiece) return;
+      
+      draggedPiece.classList.remove('dragging');
+      
+      // 检查是否放到正确位置（中心点）
+      const pieceRect = draggedPiece.getBoundingClientRect();
+      const targetRect = targetArea.getBoundingClientRect();
+      
+      const pieceCenterX = pieceRect.left + pieceRect.width/2;
+      const pieceCenterY = pieceRect.top + pieceRect.height/2;
+      
+      if (pieceCenterX > targetRect.left && pieceCenterX < targetRect.right &&
+          pieceCenterY > targetRect.top && pieceCenterY < targetRect.bottom) {
+        // 检查是否正确（字母匹配）
+        if (draggedPiece.dataset.letter === currentLetter) {
+          draggedPiece.classList.add('correct');
+          draggedPiece.style.left = '100px';
+          draggedPiece.style.top = '100px';
+          correctCount++;
+        }
+      }
+      
+      updateScore();
+      
+      draggedPiece = null;
+      document.removeEventListener('mousemove', drag);
+      document.removeEventListener('mouseup', stopDrag);
+      document.removeEventListener('touchmove', drag);
+      document.removeEventListener('touchend', stopDrag);
+    }
+    
+    function updateScore() {
+      const pieces = document.querySelectorAll('.puzzle-piece');
+      const correct = document.querySelectorAll('.puzzle-piece.correct').length;
+      scoreDisplay.textContent = `正确: ${correct} / ${pieces.length}`;
+      
+      if (correct === pieces.length && pieces.length > 0) {
+        setTimeout(() => {
+          alert('🎉 太棒了！你完成了字母拼图！');
+          initGame();
+        }, 500);
+      }
+    }
+    
+    initGame();
+  </script>
+</body>
+</html>
