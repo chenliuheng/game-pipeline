@@ -1,222 +1,214 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔩 拧螺丝 - 蒙氏教育</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            background: linear-gradient(135deg, #eceff1, #cfd8dc); 
-            min-height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            font-family: 'Comic Sans MS', cursive, sans-serif;
-            padding: 20px;
-        }
-        h1 { color: #455a64; margin-bottom: 10px; }
-        #game-board {
-            width: min(90vw, 400px);
-            background: #fff;
-            border-radius: 20px;
-            border: 4px solid #607d8b;
-            padding: 30px 20px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 20px;
-        }
-        
-        #screws-container {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-top: 25px;
-            padding: 20px;
-            background: rgba(255,255,255,0.5);
-            border-radius: 15px;
-            width: min(90vw, 400px);
-        }
-        .screw-hole {
-            width: 70px;
-            height: 70px;
-            background: #cfd8dc;
-            border-radius: 50%;
-            border: 4px dashed #90a4ae;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-        .screw-hole.filled {
-            border-style: solid;
-            border-color: #4caf50;
-            background: #e8f5e9;
-        }
-        .screw {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #ffc107, #ff9800);
-            border-radius: 50%;
-            cursor: grab;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-            transition: transform 0.2s;
-            user-select: none;
-            position: absolute;
-        }
-        .screw:hover { transform: scale(1.1); }
-        .screw.dragging { cursor: grabbing; transform: scale(1.2); z-index: 100; }
-        .screw.silver { background: linear-gradient(135deg, #b0bec5, #78909c); }
-        .screw.bronze { background: linear-gradient(135deg, #d7ccc8, #a1887f); }
-        .screw.copper { background: linear-gradient(135deg, #ffccbc, #ff8a65); }
-        .hole-1 { border-color: #ffc107; }
-        .hole-2 { border-color: #b0bec5; }
-        .hole-3 { border-color: #d7ccc8; }
-        .hole-4 { border-color: #ffccbc; }
-        #score { margin-top: 20px; font-size: 1.3rem; color: #455a64; text-align: center; }
-        #instructions { margin-top: 10px; color: #78909c; font-size: 0.9rem; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔩 拧螺丝 - 蒙氏教育</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #eceff1, #cfd8dc);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      padding: 20px;
+      user-select: none;
+    }
+    h1 { color: #455a64; margin-bottom: 10px; }
+    #instructions { color: #78909c; margin-bottom: 15px; text-align: center; }
+    
+    #game-board {
+      width: min(90vw, 400px);
+      background: #fff;
+      border-radius: 20px;
+      border: 4px solid #607d8b;
+      padding: 30px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    
+    .screw-hole {
+      width: 80px;
+      height: 80px;
+      background: #cfd8dc;
+      border-radius: 50%;
+      border: 4px dashed #90a4ae;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      cursor: pointer;
+    }
+    .screw-hole.filled {
+      border-style: solid;
+      border-color: #4caf50;
+      background: #e8f5e9;
+    }
+    
+    .screw {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      transition: transform 0.2s;
+      border: 3px solid rgba(0,0,0,0.2);
+    }
+    .screw:active { transform: scale(0.95); }
+    .screw.selected {
+      transform: scale(1.1);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+    }
+    
+    .screw.gold { background: linear-gradient(135deg, #ffd54f, #ffb300); }
+    .screw.silver { background: linear-gradient(135deg, #b0bec5, #78909c); }
+    .screw.bronze { background: linear-gradient(135deg, #d7ccc8, #a1887f); }
+    .screw.copper { background: linear-gradient(135deg, #ffccbc, #ff8a65); }
+    
+    .hole-1 { border-color: #ffb300; }
+    .hole-2 { border-color: #78909c; }
+    .hole-3 { border-color: #a1887f; }
+    .hole-4 { border-color: #ff8a65; }
+    
+    .hole-label {
+      position: absolute;
+      bottom: -25px;
+      font-size: 12px;
+      color: #666;
+      width: 100%;
+      text-align: center;
+    }
+    
+    #screws-container {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 40px;
+      padding: 20px;
+      background: rgba(255,255,255,0.5);
+      border-radius: 15px;
+      width: min(90vw, 400px);
+    }
+    
+    .screw.used { opacity: 0.3; pointer-events: none; }
+    
+    #score {
+      margin-top: 30px;
+      font-size: 1.5rem;
+      color: #455a64;
+      text-align: center;
+    }
+    
+    button {
+      margin-top: 20px;
+      padding: 12px 30px;
+      background: #607d8b;
+      color: #fff;
+      border: none;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover { background: #455a64; }
+  </style>
 </head>
 <body>
-    <h1>🔩 拧螺丝游戏</h1>
-    <p id="instructions">把螺丝拧到对应颜色的孔里</p>
-    <div id="game-board">
-        <div class="screw-hole hole-1" data-color="gold"></div>
-        <div class="screw-hole hole-2" data-color="silver"></div>
-        <div class="screw-hole hole-3" data-color="bronze"></div>
-        <div class="screw-hole hole-4" data-color="copper"></div>
+  <h1>🔩 拧螺丝游戏</h1>
+  <p id="instructions">点击选择螺丝，再点击对应颜色的孔</p>
+  
+  <div id="game-board">
+    <div class="screw-hole hole-1" data-color="gold" onclick="placeScrew(this)">
+      <span class="hole-label">金色</span>
     </div>
-    <div id="screws-container">
-        <div class="screw" data-color="gold" draggable="true">🔩</div>
-        <div class="screw" data-color="silver" draggable="true">🔩</div>
-        <div class="screw bronze" data-color="bronze" draggable="true">🔩</div>
-        <div class="screw copper" data-color="copper" draggable="true">🔩</div>
+    <div class="screw-hole hole-2" data-color="silver" onclick="placeScrew(this)">
+      <span class="hole-label">银色</span>
     </div>
-    <div id="score">已完成: 0/4</div>
-    <script>
-        let completed = 0;
-        const screws = document.querySelectorAll('.screw');
-        const holes = document.querySelectorAll('.screw-hole');
-        
-        // 触摸和拖拽支持
-        let draggedItem = null;
-        
-        screws.forEach(screw => {
-            // 鼠标事件
-            screw.addEventListener('dragstart', dragStart);
-            screw.addEventListener('dragend', dragEnd);
-            
-            // 触摸事件
-            screw.addEventListener('touchstart', touchStart, {passive: false});
-            screw.addEventListener('touchmove', touchMove, {passive: false});
-            screw.addEventListener('touchend', touchEnd);
-        });
-        
-        holes.forEach(hole => {
-            hole.addEventListener('dragover', dragOver);
-            hole.addEventListener('drop', drop);
-            hole.addEventListener('touchend', touchDrop);
-        });
-        
-        function dragStart(e) {
-            draggedItem = this;
-            this.classList.add('dragging');
-            e.dataTransfer.setData('text/plain', this.dataset.color);
-        }
-        
-        function dragEnd() {
-            this.classList.remove('dragging');
-            draggedItem = null;
-        }
-        
-        function dragOver(e) {
-            e.preventDefault();
-        }
-        
-        function drop(e) {
-            e.preventDefault();
-            const color = e.dataTransfer.getData('text/plain');
-            const holeColor = this.dataset.color;
-            
-            if (color === holeColor && !this.querySelector('.screw')) {
-                const screw = document.querySelector(`.screw[data-color="${color}"]`);
-                this.appendChild(screw);
-                screw.style.position = 'static';
-                screw.draggable = false;
-                completed++;
-                updateScore();
-            }
-        }
-        
-        // 触摸支持
-        let touchScrew = null;
-        let touchClone = null;
-        
-        function touchStart(e) {
-            e.preventDefault();
-            touchScrew = this;
-            const touch = e.touches[0];
-            
-            // 创建克隆元素用于拖拽显示
-            touchClone = this.cloneNode(true);
-            touchClone.style.position = 'fixed';
-            touchClone.style.left = touch.clientX - 25 + 'px';
-            touchClone.style.top = touch.clientY - 25 + 'px';
-            touchClone.style.pointerEvents = 'none';
-            touchClone.style.zIndex = '1000';
-            document.body.appendChild(touchClone);
-            
-            this.style.opacity = '0.5';
-        }
-        
-        function touchMove(e) {
-            e.preventDefault();
-            if (!touchClone) return;
-            const touch = e.touches[0];
-            touchClone.style.left = touch.clientX - 25 + 'px';
-            touchClone.style.top = touch.clientY - 25 + 'px';
-        }
-        
-        function touchEnd(e) {
-            if (touchClone) {
-                document.body.removeChild(touchClone);
-                touchClone = null;
-            }
-            if (touchScrew) {
-                touchScrew.style.opacity = '1';
-                touchScrew = null;
-            }
-        }
-        
-        function touchDrop(e) {
-            if (!touchScrew) return;
-            const screwColor = touchScrew.dataset.color;
-            const holeColor = this.dataset.color;
-            
-            if (screwColor === holeColor && !this.querySelector('.screw')) {
-                this.appendChild(touchScrew);
-                touchScrew.style.position = 'static';
-                touchScrew.draggable = false;
-                touchScrew.style.opacity = '1';
-                completed++;
-                updateScore();
-                touchScrew = null;
-            }
-        }
-        
-        function updateScore() {
-            document.getElementById('score').textContent = '已完成: ' + completed + '/4';
-            if (completed >= 4) {
-                setTimeout(() => alert('🎉 太棒了！所有螺丝都拧好了！'), 300);
-            }
-        }
-    </script>
+    <div class="screw-hole hole-3" data-color="bronze" onclick="placeScrew(this)">
+      <span class="hole-label">铜色</span>
+    </div>
+    <div class="screw-hole hole-4" data-color="copper" onclick="placeScrew(this)">
+      <span class="hole-label">铜红色</span>
+    </div>
+  </div>
+  
+  <div id="screws-container">
+    <div class="screw gold" data-color="gold" onclick="selectScrew(this)">🔩</div>
+    <div class="screw silver" data-color="silver" onclick="selectScrew(this)">🔩</div>
+    <div class="screw bronze" data-color="bronze" onclick="selectScrew(this)">🔩</div>
+    <div class="screw copper" data-color="copper" onclick="selectScrew(this)">🔩</div>
+  </div>
+  
+  <div id="score">已完成: 0 / 4</div>
+  <button onclick="resetGame()">🔄 重新开始</button>
+
+  <script>
+    let selectedScrew = null;
+    let completed = 0;
+    
+    function selectScrew(element) {
+      if (element.classList.contains('used')) return;
+      document.querySelectorAll('.screw').forEach(s => s.classList.remove('selected'));
+      selectedScrew = element;
+      element.classList.add('selected');
+    }
+    
+    function placeScrew(hole) {
+      if (!selectedScrew) {
+        alert('请先选择一个螺丝！');
+        return;
+      }
+      if (hole.querySelector('.screw')) {
+        alert('这个孔已经有螺丝了！');
+        return;
+      }
+      
+      if (selectedScrew.dataset.color === hole.dataset.color) {
+        hole.innerHTML = '';
+        hole.appendChild(selectedScrew);
+        selectedScrew.classList.remove('selected');
+        selectedScrew.classList.add('used');
+        selectedScrew.style.cursor = 'default';
+        selectedScrew = null;
+        hole.classList.add('filled');
+        completed++;
+        updateScore();
+        if (completed >= 4) setTimeout(() => alert('🎉 太棒了！所有螺丝都拧好了！'), 300);
+      } else {
+        alert('颜色不匹配！再试试。');
+      }
+    }
+    
+    function updateScore() {
+      document.getElementById('score').textContent = '已完成: ' + completed + ' / 4';
+    }
+    
+    function resetGame() {
+      completed = 0;
+      selectedScrew = null;
+      document.querySelectorAll('.screw-hole').forEach(hole => {
+        const color = hole.dataset.color;
+        const labels = {gold:'金色', silver:'银色', bronze:'铜色', copper:'铜红色'};
+        hole.innerHTML = '<span class="hole-label">' + labels[color] + '</span>';
+        hole.classList.remove('filled');
+      });
+      document.getElementById('screws-container').innerHTML = `
+        <div class="screw gold" data-color="gold" onclick="selectScrew(this)">🔩</div>
+        <div class="screw silver" data-color="silver" onclick="selectScrew(this)">🔩</div>
+        <div class="screw bronze" data-color="bronze" onclick="selectScrew(this)">🔩</div>
+        <div class="screw copper" data-color="copper" onclick="selectScrew(this)">🔩</div>
+      `;
+      updateScore();
+    }
+  </script>
 </body>
 </html>
