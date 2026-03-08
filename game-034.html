@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔢 数字排序 - 蒙氏教育</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #e0f2f1, #b2dfdb);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      padding: 20px;
+    }
+    h1 { color: #00695c; margin-bottom: 10px; }
+    #instructions { color: #666; margin-bottom: 20px; }
+    
+    .number-line {
+      display: flex;
+      gap: 15px;
+      margin: 30px 0;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .number-card {
+      width: 60px;
+      height: 70px;
+      background: linear-gradient(135deg, #4db6ac, #00897b);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .number-card:hover { transform: scale(1.1); }
+    .number-card.correct { background: #66bb6a; }
+    
+    .target-line {
+      display: flex;
+      gap: 15px;
+      margin: 30px 0;
+      background: rgba(255,255,255,0.5);
+      padding: 20px;
+      border-radius: 15px;
+    }
+    
+    .slot {
+      width: 60px;
+      height: 70px;
+      border: 3px dashed #00695c;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: #00695c;
+    }
+    
+    button {
+      padding: 15px 30px;
+      background: #00695c;
+      color: #fff;
+      border: none;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    
+    #message { margin-top: 20px; font-size: 20px; color: #00695c; }
+  </style>
+</head>
+<body>
+  <h1>🔢 数字排序</h1>
+  <p id="instructions">按1-10顺序点击数字卡片</p>
+  
+  <div class="number-line" id="numbers"></div>
+  
+  <div class="target-line" id="targets"></div>
+  
+  <div id="message">进度: 0/10</div>
+  <button onclick="initGame()">🔄 重新开始</button>
+
+  <script>
+    let currentNum = 1;
+Game() {
+      currentNum =     
+    function init1;
+      
+      const numbersContainer = document.getElementById('numbers');
+      numbersContainer.innerHTML = '';
+      
+      const nums = [1,2,3,4,5,6,7,8,9,10];
+      const shuffled = [...nums].sort(() => Math.random() - 0.5);
+      
+      shuffled.forEach(num => {
+        const card = document.createElement('div');
+        card.className = 'number-card';
+        card.textContent = num;
+        card.onclick = () => clickNumber(num, card);
+        numbersContainer.appendChild(card);
+      });
+      
+      const targetsContainer = document.getElementById('targets');
+      targetsContainer.innerHTML = '';
+      for (let i = 1; i <= 10; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'slot';
+        slot.id = 'slot-' + i;
+        slot.textContent = i;
+        targetsContainer.appendChild(slot);
+      }
+      
+      document.getElementById('message').textContent = '进度: 0/10';
+    }
+    
+    function clickNumber(num, card) {
+      if (num === currentNum) {
+        card.classList.add('correct');
+        card.style.opacity = '0.5';
+        card.style.pointerEvents = 'none';
+        
+        const slot = document.getElementById('slot-' + num);
+        slot.style.background = '#c8e6c9';
+        slot.textContent = '✅';
+        
+        currentNum++;
+        document.getElementById('message').textContent = '进度: ' + (currentNum - 1) + '/10';
+        
+        if (currentNum > 10) {
+          document.getElementById('message').textContent = '🎉 太棒了！完成排序！';
+        }
+      }
+    }
+    
+    initGame();
+  </script>
+</body>
+</html>

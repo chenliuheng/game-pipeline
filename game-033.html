@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>✏️ 砂纸数字 - 蒙氏教育</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      padding: 20px;
+    }
+    h1 { color: #e65100; margin-bottom: 10px; }
+    #instructions { color: #666; margin-bottom: 20px; }
+    
+    .sand-paper {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin: 30px 0;
+    }
+    
+    .number-card {
+      width: 100px;
+      height: 120px;
+      background: #fff8e1;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 60px;
+      font-weight: bold;
+      color: #e65100;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: all 0.3s;
+      font-family: serif;
+    }
+    .number-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 2px,
+        rgba(139,69,19,0.1) 2px,
+        rgba(139,69,19,0.1) 4px
+      );
+      border-radius: 15px;
+    }
+    .number-card:hover { transform: scale(1.05); }
+    .number-card.selected { background: #ffcc80; transform: scale(1.1); }
+    
+    .trace-area {
+      width: 300px;
+      height: 300px;
+      background: #fff8e1;
+      border: 4px solid #e65100;
+      border-radius: 20px;
+      margin: 30px 0;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 120px;
+      color: #e65100;
+    }
+    
+    button {
+      padding: 15px 30px;
+      background: #e65100;
+      color: #fff;
+      border: none;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    
+    #message { margin-top: 20px; font-size: 20px; color: #e65100; }
+  </style>
+</head>
+<body>
+  <h1>✏️ 砂纸数字</h1>
+  <p id="instructions">选择数字，然后在砂纸区域练习书写</p>
+  
+  <div class="sand-paper" id="numbers"></div>
+  
+  <div class="trace-area" id="trace" onclick="showTrace()">?</div>
+  
+  <div id="message">选择一个数字开始练习</div>
+  <button onclick="resetGame()">🔄 重新开始</button>
+
+  <script>
+    const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    let selected = null;
+    
+    const container = document.getElementById('numbers');
+    numbers.forEach(num => {
+      const card = document.createElement('div');
+      card.className = 'number-card';
+      card.textContent = num;
+      card.style.position = 'relative';
+      card.onclick = () => selectNumber(num, card);
+      container.appendChild(card);
+    });
+    
+    function selectNumber(num, card) {
+      document.querySelectorAll('.number-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      selected = num;
+      document.getElementById('trace').textContent = num;
+      document.getElementById('message').textContent = '用手指跟数字轨迹练习书写';
+    }
+    
+    function showTrace() {
+      if (!selected) {
+        document.getElementById('message').textContent = '请先选择一个数字！';
+      }
+    }
+    
+    function resetGame() {
+      selected = null;
+      document.querySelectorAll('.number-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('trace').textContent = '?';
+      document.getElementById('message').textContent = '选择一个数字开始练习';
+    }
+  </script>
+</body>
+</html>
