@@ -3,165 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>📖 看图识字 - 蒙氏教育</title>
+  <title>📖 看图识字 - 蒙氏教育游戏</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
+    :root { --primary: #E74C3C; --secondary: #C0392B; --accent: #FFD93D; --success: #6BCB77; --bg-gradient: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 50%, #FFEBEE 100%); }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      font-family: 'Comic Sans MS', cursive, sans-serif;
-      padding: 20px;
-    }
-    h1 { color: #1565c0; margin-bottom: 10px; }
-    #card-container {
-      position: relative;
-      width: min(90vw, 320px);
-      height: min(90vw, 400px);
-      perspective: 1000px;
-      margin: 20px 0;
-    }
-    .flashcard {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      cursor: pointer;
-      transform-style: preserve-3d;
-      transition: transform 0.6s;
-    }
-    .flashcard.flipped {
-      transform: rotateY(180deg);
-    }
-    .card-face {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      backface-visibility: hidden;
-      border-radius: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-    }
-    .card-front {
-      background: #fff;
-      border: 4px solid #1565c0;
-    }
-    .card-back {
-      background: linear-gradient(135deg, #1565c0, #42a5f5);
-      color: #fff;
-      transform: rotateY(180deg);
-    }
-    .card-icon {
-      font-size: 120px;
-      margin-bottom: 20px;
-    }
-    .card-word {
-      font-size: 48px;
-      color: #1565c0;
-      font-weight: bold;
-    }
-    .card-word-back {
-      font-size: 56px;
-      font-weight: bold;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    }
-    .card-pinyin {
-      font-size: 24px;
-      color: #666;
-      margin-top: 10px;
-    }
-    .card-pinyin-back {
-      font-size: 24px;
-      opacity: 0.9;
-      margin-top: 10px;
-    }
-    #progress {
-      margin: 15px 0;
-      color: #555;
-      font-size: 18px;
-    }
-    #options {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 15px;
-      margin: 20px 0;
-      width: min(90vw, 320px);
-    }
-    .option-btn {
-      padding: 20px;
-      background: #fff;
-      border: 3px solid #1565c0;
-      border-radius: 15px;
-      font-size: 32px;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    .option-btn:hover {
-      background: #e3f2fd;
-      transform: scale(1.05);
-    }
-    .option-btn.correct {
-      background: #c8e6c9;
-      border-color: #2e7d32;
-    }
-    .option-btn.wrong {
-      background: #ffcdd2;
-      border-color: #c62828;
-    }
-    .option-btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-    button {
-      padding: 12px 24px;
-      background: #1565c0;
-      color: #fff;
-      border: none;
-      border-radius: 25px;
-      font-size: 16px;
-      cursor: pointer;
-      margin: 10px;
-      transition: all 0.3s;
-    }
-    button:hover {
-      background: #0d47a1;
-      transform: scale(1.05);
-    }
-    #message {
-      margin: 15px 0;
-      font-size: 24px;
-      font-weight: bold;
-      min-height: 36px;
-    }
-    .message-correct { color: #2e7d32; }
-    .message-wrong { color: #c62828; }
+    body { font-family: 'Nunito', sans-serif; background: var(--bg-gradient); min-height: 100vh; color: #2D3436; }
+    body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-image: radial-gradient(circle at 20% 30%, rgba(231, 76, 60, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(192, 57, 43, 0.1) 0%, transparent 50%); pointer-events: none; z-index: 0; }
+    .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; position: relative; z-index: 1; }
+    header { text-align: center; margin-bottom: 40px; animation: fadeInDown 0.6s ease-out; }
+    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    .back-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: white; border: none; border-radius: 50px; font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 700; color: #2D3436; text-decoration: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: all 0.3s; margin-bottom: 20px; }
+    .back-btn:hover { transform: translateX(-5px); }
+    h1 { font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
+    .instructions { font-size: 1.1rem; color: #636E72; font-weight: 600; }
+    .game-area { background: white; border-radius: 30px; padding: 40px; box-shadow: 0 10px 40px rgba(231, 76, 60, 0.15); margin-bottom: 30px; animation: fadeInUp 0.6s ease-out 0.2s both; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .card { width: 200px; height: 240px; background: linear-gradient(135deg, #FFCDD2, #EF9A9A); border-radius: 25px; margin: 0 auto 30px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; box-shadow: 0 8px 25px rgba(231, 76, 60, 0.2); }
+    .card:hover { transform: scale(1.05); }
+    .card-icon { font-size: 5rem; margin-bottom: 10px; }
+    .card-word { font-size: 2rem; font-weight: 800; color: var(--primary); }
+    .card-pinyin { font-size: 1rem; color: #636E72; }
+    .options { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-bottom: 30px; }
+    .option { padding: 15px 30px; background: white; border: 3px solid var(--primary); border-radius: 15px; font-size: 1.5rem; font-weight: 700; color: var(--primary); cursor: pointer; transition: all 0.3s; }
+    .option:hover { background: #FFEBEE; transform: scale(1.05); }
+    .option.correct { background: #C8E6C9; border-color: var(--success); color: var(--success); }
+    .option.wrong { background: #FFCDD2; border-color: var(--primary); }
+    .progress { text-align: center; font-size: 1.3rem; font-weight: 700; color: var(--primary); margin-bottom: 20px; }
+    .message { text-align: center; font-size: 1.5rem; font-weight: 700; min-height: 35px; margin-bottom: 20px; }
+    .message.success { color: var(--success); }
+    .reset-btn { display: block; margin: 0 auto; padding: 14px 35px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; border-radius: 50px; font-family: 'Nunito', sans-serif; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.3s; box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4); }
+    .reset-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(231, 76, 60, 0.5); }
   </style>
 </head>
 <body>
-  <h1>📖 看图识字</h1>
-  <p>点击卡片看答案，选择正确的汉字</p>
-  <div id="progress">当前: 1 / 10</div>
-  <div id="card-container">
-    <div class="flashcard" onclick="flipCard()">
-      <div class="card-face card-front">
-        <div class="card-icon" id="card-icon">🍎</div>
-        <div class="card-word" id="card-hint">这是什么？</div>
+  <div class="container">
+    <header>
+      <a href="index.html" class="back-btn">← 返回游戏首页</a>
+      <h1>📖 看图识字</h1>
+      <p class="instructions">看图，选择正确的汉字</p>
+    </header>
+    <div class="game-area">
+      <div class="card" id="card" onclick="flipCard()">
+        <div class="card-icon" id="cardIcon">🍎</div>
+        <div class="card-word" id="cardWord">?</div>
+        <div class="card-pinyin" id="cardPinyin">点击看答案</div>
       </div>
-      <div class="card-face card-back">
-        <div class="card-word-back" id="card-word">苹果</div>
-        <div class="card-pinyin-back" id="card-pinyin">píng guǒ</div>
-      </div>
+      <div class="options" id="options"></div>
+      <div class="progress">进度: <span id="progress">1</span> / <span id="total">10</span></div>
+      <div class="message" id="message"></div>
+      <button class="reset-btn" onclick="initGame()">🔄 重新开始</button>
     </div>
   </div>
-  <div id="message"></div>
-  <div id="options"></div>
-  <button onclick="initGame()">🔄 重新开始</button>
-  <button onclick="nextCard()">下一个 ➡️</button>
-
   <script>
     const words = [
       {icon: '🍎', word: '苹果', pinyin: 'píng guǒ'},
@@ -174,114 +69,81 @@
       {icon: '🐱', word: '小猫', pinyin: 'xiǎo māo'},
       {icon: '🌸', word: '花朵', pinyin: 'huā duǒ'},
       {icon: '🌳', word: '大树', pinyin: 'dà shù'},
-      {icon: '☀️', word: '太阳', pinyin: 'tài yáng'},
-      {icon: '🌙', word: '月亮', pinyin: 'yuè liàng'},
     ];
-    
     let currentIndex = 0;
     let gameWords = [];
-    let canAnswer = true;
-    
-    const cardContainer = document.querySelector('.flashcard');
-    const cardIcon = document.getElementById('card-icon');
-    const cardHint = document.getElementById('card-hint');
-    const cardWord = document.getElementById('card-word');
-    const cardPinyin = document.getElementById('card-pinyin');
-    const progress = document.getElementById('progress');
-    const optionsDiv = document.getElementById('options');
-    const messageDiv = document.getElementById('message');
+    let answered = false;
     
     function initGame() {
-      // 随机选择10个词
-      gameWords = [...words].sort(() => Math.random() - 0.5).slice(0, 10);
+      gameWords = [...words].sort(() => Math.random() - 0.5).slice(0, 5);
       currentIndex = 0;
-      canAnswer = true;
+      answered = false;
+      document.getElementById('progress').textContent = '1';
+      document.getElementById('total').textContent = '5';
       showCard();
     }
     
     function showCard() {
+      answered = false;
       const word = gameWords[currentIndex];
+      document.getElementById('cardIcon').textContent = word.icon;
+      document.getElementById('cardWord').textContent = '?';
+      document.getElementById('cardPinyin').textContent = '点击看答案';
+      document.getElementById('card').style.background = 'linear-gradient(135deg, #FFCDD2, #EF9A9A)';
+      document.getElementById('message').textContent = '';
       
-      // 重置卡片
-      cardContainer.classList.remove('flipped');
-      cardIcon.textContent = word.icon;
-      cardHint.textContent = '这是什么？';
-      cardWord.textContent = word.word;
-      cardPinyin.textContent = word.pinyin;
-      
-      progress.textContent = `当前: ${currentIndex + 1} / ${gameWords.length}`;
-      messageDiv.textContent = '';
-      messageDiv.className = '';
-      
-      // 生成选项（正确答案 + 3个随机错误）
+      // Generate options
       const options = [word.word];
-      const otherWords = words.filter(w => w.word !== word.word);
-      const shuffled = otherWords.sort(() => Math.random() - 0.5);
-      options.push(shuffled[0].word, shuffled[1].word, shuffled[2].word);
+      const others = words.filter(w => w.word !== word.word).sort(() => Math.random() - 0.5);
+      options.push(others[0].word, others[1].word, others[2].word);
+      const shuffled = options.sort(() => Math.random() - 0.5);
       
-      // 打乱选项
-      const finalOptions = options.sort(() => Math.random() - 0.5);
-      
-      // 创建选项按钮
+      const optionsDiv = document.getElementById('options');
       optionsDiv.innerHTML = '';
-      finalOptions.forEach(opt => {
+      shuffled.forEach(opt => {
         const btn = document.createElement('div');
-        btn.className = 'option-btn';
+        btn.className = 'option';
         btn.textContent = opt;
         btn.onclick = () => checkAnswer(opt, word.word, btn);
         optionsDiv.appendChild(btn);
       });
-      
-      canAnswer = true;
     }
     
     function flipCard() {
-      cardContainer.classList.toggle('flipped');
-      if (cardContainer.classList.contains('flipped')) {
-        cardHint.textContent = '点击查看图片';
+      if (!answered) {
+        const word = gameWords[currentIndex];
+        document.getElementById('cardWord').textContent = word.word;
+        document.getElementById('cardPinyin').textContent = word.pinyin;
+        document.getElementById('card').style.background = 'linear-gradient(135deg, #C8E6C9, #A5D6A7)';
       }
     }
     
     function checkAnswer(selected, correct, btn) {
-      if (!canAnswer) return;
-      canAnswer = false;
+      if (answered) return;
+      answered = true;
       
-      const buttons = document.querySelectorAll('.option-btn');
+      const buttons = document.querySelectorAll('.option');
       buttons.forEach(b => b.disabled = true);
       
       if (selected === correct) {
         btn.classList.add('correct');
-        messageDiv.textContent = '🎉 正确！';
-        messageDiv.className = 'message-correct';
+        document.getElementById('message').textContent = '🎉 正确！';
+        document.getElementById('message').className = 'message success';
       } else {
         btn.classList.add('wrong');
-        buttons.forEach(b => {
-          if (b.textContent === correct) {
-            b.classList.add('correct');
-          }
-        });
-        messageDiv.textContent = '再想想！';
-        messageDiv.className = 'message-wrong';
+        buttons.forEach(b => { if (b.textContent === correct) b.classList.add('correct'); });
+        document.getElementById('message').textContent = '再想想~';
       }
       
-      // 延迟后进入下一张
       setTimeout(() => {
-        if (currentIndex < gameWords.length - 1) {
-          nextCard();
+        currentIndex++;
+        if (currentIndex >= gameWords.length) {
+          document.getElementById('message').textContent = '🎊 全部完成！太棒了！';
         } else {
-          messageDiv.textContent = '🎊 完成！太棒了！';
-          messageDiv.className = 'message-correct';
+          document.getElementById('progress').textContent = currentIndex + 1;
+          showCard();
         }
       }, 1500);
-    }
-    
-    function nextCard() {
-      currentIndex++;
-      if (currentIndex >= gameWords.length) {
-        currentIndex = 0;
-        gameWords = [...words].sort(() => Math.random() - 0.5).slice(0, 10);
-      }
-      showCard();
     }
     
     initGame();
